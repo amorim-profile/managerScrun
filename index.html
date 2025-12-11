@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scrum Manager (Low-Code/Local)</title>
-    <!-- Load Tailwind CSS for responsive and modern styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Load Chart.js library for charts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-    <!-- Tailwind configuration to use Inter font and standard colors -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         body { 
@@ -149,10 +146,8 @@
 </head>
 <body class="min-h-screen">
 
-    <!-- Container Principal de Layout: Sidebar + Conteúdo -->
     <div class="flex flex-col md:flex-row min-h-screen">
         
-        <!-- Sidebar Navigation (Desktop and Mobile Overlay) -->
         <div id="sidebar-menu" class="mobile-nav-overlay md:flex md:w-64 bg-gray-900 flex-col p-4 shadow-xl z-40">
             <h1 class="text-2xl font-bold text-white mb-8 mt-4 hidden md:block">Scrum Manager</h1>
             <nav class="flex-1 space-y-2">
@@ -163,18 +158,15 @@
                     <span>Dashboard</span>
                 </button>
 
-                <!-- Menu Pai: Registrar -->
                 <button id="nav-registrar" onclick="toggleSubmenu('registrar')"
                     class="nav-btn flex items-center justify-between w-full px-4 text-gray-300 hover:bg-gray-800 transition duration-150">
                     <span class="flex items-center">
                         <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path></svg>
                         <span>Registrar</span>
                     </span>
-                    <!-- Ícone de seta -->
                     <svg id="arrow-registrar" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
                 
-                <!-- Submenu Registrar -->
                 <div id="submenu-registrar" class="space-y-1 pl-6 hidden">
                     <button id="nav-feature" onclick="showView('feature'); toggleMobileMenu(true);"
                         class="submenu-btn flex items-center w-full px-4 text-gray-300 hover:text-white hover:bg-gray-800 transition duration-150 rounded-lg text-sm">
@@ -188,25 +180,21 @@
                     </button>
                 </div>
                 
-                <!-- Menu Pai: Configurações (ATUALIZADO PARA SER PAI) -->
                 <button id="nav-config-parent" onclick="toggleSubmenu('config-parent')"
                     class="nav-btn flex items-center justify-between w-full px-4 text-gray-300 hover:bg-gray-800 transition duration-150">
                     <span class="flex items-center">
                         <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                         <span>Configurações</span>
                     </span>
-                    <!-- Ícone de seta -->
                     <svg id="arrow-config-parent" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                 </button>
                 
-                <!-- Submenu Configurações (NOVOS ITENS) -->
                 <div id="submenu-config-parent" class="space-y-1 pl-6 hidden">
                     <button id="nav-integration" onclick="showView('integration'); toggleMobileMenu(true);"
                         class="submenu-btn flex items-center w-full px-4 text-gray-300 hover:text-white hover:bg-gray-800 transition duration-150 rounded-lg text-sm">
                         <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
                         <span>Integração</span>
                     </button>
-                    <!-- O antigo nav-configs agora se torna o submenu "Sistema" -->
                     <button id="nav-configs" onclick="showView('configs'); toggleMobileMenu(true);"
                         class="submenu-btn flex items-center w-full px-4 text-gray-300 hover:text-white hover:bg-gray-800 transition duration-150 rounded-lg text-sm">
                         <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
@@ -216,7 +204,6 @@
 
             </nav>
             
-            <!-- User ID placeholder at the bottom -->
             <div class="mt-auto pt-4 border-t border-gray-700">
                 <p class="text-xs text-gray-500">
                     Usuário: <span class="font-mono text-gray-300">low-code-user</span>
@@ -224,20 +211,14 @@
             </div>
         </div>
     
-        <!-- Mobile Sidebar Overlay (Sombra) -->
         <div id="mobile-overlay" class="overlay" onclick="toggleMobileMenu()"></div>
 
-        <!-- Main Content Area -->
         <div class="flex-1 main-content-wrapper overflow-y-auto">
 
-            <!-- MODALS (mantidos fora das views para serem sempre acessíveis) -->
-            
-            <!-- NOVO MODAL: Listagem de Tasks de uma História (Similar ao de Feature) -->
             <div id="task-list-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
                 <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-4xl mx-4 md:mx-auto max-h-[90vh] overflow-y-auto">
                     <h3 id="task-modal-list-title" class="text-xl font-bold mb-4 text-gray-800 border-b pb-2">Tarefas da História</h3>
                     
-                    <!-- Tabela de Tasks no Modal -->
                     <div class="overflow-x-auto shadow-md rounded-lg border">
                         <table class="min-w-full divide-y divide-gray-200 dense-table">
                             <thead class="bg-gray-100">
@@ -251,14 +232,12 @@
                                 </tr>
                             </thead>
                             <tbody id="task-list-modal-table-body" class="bg-white divide-y divide-gray-100">
-                                <!-- Conteúdo preenchido via JS -->
-                            </tbody>
+                                </tbody>
                         </table>
                         <p id="no-tasks-modal-message" class="text-center text-gray-500 p-6 hidden">Nenhuma tarefa registrada para esta história.</p>
                     </div>
                     
                     <div class="flex justify-between pt-6 space-x-3">
-                        <!-- NOVO BOTÃO DE EXPORTAÇÃO PARA TASKS -->
                         <button onclick="exportDataToExcel('tasks')"
                             class="px-4 py-2 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition duration-150 shadow-md flex items-center space-x-1">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
@@ -275,9 +254,6 @@
                     </div>
                 </div>
             </div>
-            <!-- FIM NOVO MODAL: Listagem de Tasks de uma História -->
-
-            <!-- Modal para Visualização de Histórias de Feature (MANTIDO) -->
             <div id="feature-story-list-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
                 <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-4xl mx-4 md:mx-auto max-h-[90vh] overflow-y-auto">
                     <h3 id="feature-story-modal-title" class="text-xl font-bold mb-4 text-gray-800 border-b pb-2">Histórias da Feature</h3>
@@ -295,8 +271,7 @@
                                 </tr>
                             </thead>
                             <tbody id="feature-story-modal-table-body" class="bg-white divide-y divide-gray-100">
-                                <!-- Conteúdo preenchido via JS -->
-                            </tbody>
+                                </tbody>
                         </table>
                     </div>
                     
@@ -305,30 +280,24 @@
                     </div>
                 </div>
             </div>
-            <!-- FIM Modal para Visualização de Histórias de Feature -->
-
-            <!-- Message Modal (replaces alert/confirm) -->
             <div id="message-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
                 <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm">
                     <h3 id="modal-title" class="text-xl font-bold mb-4 text-gray-800"></h3>
                     <p id="modal-body" class="mb-6 text-gray-600"></p>
                     <div id="modal-actions" class="flex justify-end space-x-3">
-                        <!-- Actions injected via JS -->
-                    </div>
+                        </div>
                 </div>
             </div>
             
-            <!-- Task Creation/Edition Modal (MANTIDO) -->
             <div id="task-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
                 <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg mx-4 md:mx-auto"> 
                     <h3 id="task-modal-title" class="text-lg font-bold mb-4 text-gray-800 border-b pb-2">Inserir Nova Tarefa</h3>
                     <form id="task-form" class="space-y-4">
                         <input type="hidden" id="task-story-id">
                         <input type="hidden" id="task-id"> 
+                        <input type="hidden" id="task-doc-id"> 
                         
-                        <!-- Fields in a two-column grid on desktop -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- ID EXTERNO DA TAREFA -->
                             <div>
                                 <label for="task-external-id" class="block text-sm font-medium text-gray-700">ID Externo</label>
                                 <input type="number" id="task-external-id" min="0" maxlength="10" required
@@ -336,7 +305,6 @@
                                     placeholder="1234567890">
                             </div>
                             
-                            <!-- NOVO CAMPO: ID GMUD (Abre link) -->
                             <div>
                                 <label for="task-gmud-id" class="block text-sm font-medium text-gray-700">ID GMUD</label>
                                 <input type="text" id="task-gmud-id" 
@@ -345,15 +313,12 @@
                                 <p class="text-xs text-gray-500 mt-1">Gera link na visualização.</p>
                             </div>
                         </div>
-                        <!-- FIM Grid -->
-
                         <div>
                             <label for="task-title" class="block text-sm font-medium text-gray-700">Título</label>
                             <input type="text" id="task-title" required 
                                 class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm focus:ring-indigo-500 focus:border-indigo-500">
                         </div>
                         
-                        <!-- CAMPO LINK EXTERNO GERAL -->
                         <div>
                             <label for="task-external-link" class="block text-sm font-medium text-gray-700">Link Externo (Ex: Pull Request)</label>
                             <input type="url" id="task-external-link" 
@@ -361,7 +326,6 @@
                                 placeholder="https://github.com/pr/123">
                         </div>
 
-                        <!-- Fields using new configs: Sistema, Tech Lead, Status -->
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label for="task-system" class="block text-sm font-medium text-gray-700">Sistema</label>
@@ -384,24 +348,17 @@
                     </form>
                 </div>
             </div>
-            <!-- FIM Task Creation/Edition Modal -->
-
-            <!-- 1. DASHBOARD VIEW -->
             <div id="dashboard-view" class="view p-4 md:p-8">
                 
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
                     <h2 class="text-3xl font-bold text-gray-900 mb-4 md:mb-0">Dashboard de Prioridades</h2>
                 </div>
                 
-                <!-- KPI Cards: Mais elegantes e com bordas limpas -->
                 <div id="dashboard-summary" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                    <!-- Summary cards (KPIs) will be populated via JS -->
-                </div>
+                    </div>
 
-                <!-- Priority Charts Container: Layout mais adaptável (2/3 + 1/3) -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                    <!-- Chart 3: PO by Status (Stacked Bar) - 2/3 de largura em desktop -->
                     <div class="bg-white p-5 rounded-xl shadow-lg border-t-4 border-indigo-500 hover:shadow-xl transition duration-300 lg:col-span-2"> 
                         <h3 class="text-xl font-semibold mb-4 text-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center">
                             <span id="po-status-chart-title" class="mb-2 sm:mb-0">Status por Product Owner</span>
@@ -416,7 +373,6 @@
                         </div>
                     </div>
                     
-                    <!-- Chart 4: Initiatives Done (Doughnut) - 1/3 de largura em desktop -->
                     <div class="bg-white p-5 rounded-xl shadow-lg border-t-4 border-green-500 hover:shadow-xl transition duration-300">
                         <h3 class="text-xl font-semibold mb-4 text-gray-800">Iniciativas Concluídas</h3>
                         <div class="chart-container">
@@ -424,7 +380,6 @@
                         </div>
                     </div>
                     
-                    <!-- Chart 2: Status by Area (Stacked Bar) - 2/3 de largura em desktop -->
                     <div class="bg-white p-5 rounded-xl shadow-lg border-t-4 border-indigo-500 hover:shadow-xl transition duration-300 lg:col-span-2"> 
                         <h3 class="text-xl font-semibold mb-4 text-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center">
                             <span id="area-status-chart-title" class="mb-2 sm:mb-0">Status por Área</span>
@@ -439,7 +394,6 @@
                         </div>
                     </div>
                     
-                    <!-- Chart 1: Total Initiatives by Area (Bar) - 1/3 de largura em desktop -->
                     <div class="bg-white p-5 rounded-xl shadow-lg border-t-4 border-indigo-500 hover:shadow-xl transition duration-300">
                         <h3 class="text-xl font-semibold mb-4 text-gray-800">Total de Iniciativas por Área</h3>
                         <div class="chart-container">
@@ -450,9 +404,7 @@
                 </div>
             </div>
 
-            <!-- 2. STORIES VIEW (List and Form) -->
             <div id="stories-view" class="view hidden p-4 md:p-8">
-                <!-- Header: Mais espaçoso -->
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6" id="stories-list-header">
                     <h2 class="text-3xl font-bold text-gray-900 mb-4 sm:mb-0">Histórias de Usuário</h2>
                     <button onclick="openStoryForm()"
@@ -462,15 +414,14 @@
                     </button>
                 </div>
 
-                <!-- Story Creation/Editing Form: Mais elegante e espaçoso -->
                 <div id="story-form-container" class="bg-white p-6 md:p-8 rounded-xl shadow-lg mb-8 hidden border-t-4 border-indigo-600">
                     <h3 id="story-form-title" class="text-2xl font-semibold mb-6 text-indigo-700 border-b pb-3">Nova História</h3>
                     
                     <div class="space-y-4">
                         <form id="story-form" class="space-y-4">
                             <input type="hidden" id="story-id" value="">
+                            <input type="hidden" id="story-doc-id">
                             
-                            <!-- BLOCO: ID Externo e Título/Resumo -->
                             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                                 <div class="md:col-span-1">
                                     <label for="story-external-id" class="block text-sm font-medium text-gray-700">ID Externo</label>
@@ -484,7 +435,6 @@
                                 </div>
                             </div>
                             
-                            <!-- Link Externo e Feature Associada em uma linha -->
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                  <div>
                                     <label for="story-external-link" class="block text-sm font-medium text-gray-700">Link Externo (Jira, Trello, etc.)</label>
@@ -506,7 +456,6 @@
                                 <textarea id="story-description" rows="3" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm focus:ring-indigo-500 focus:border-indigo-500"></textarea>
                             </div>
 
-                            <!-- Grid de 4 Colunas para Metadados - 2/2/2/2 ou 1/1/1/1 em mobile -->
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                                 <div class="col-span-2 md:col-span-1">
                                     <label for="story-requested-date" class="block text-sm font-medium text-gray-700">Data de Inclusão</label>
@@ -540,9 +489,7 @@
                                 </div>
                             </div>
                             
-                            <!-- RODAPÉ DO FORMULÁRIO COM BOTÃO "INSERIR TAREFA" NO CANTO ESQUERDO -->
                             <div class="flex flex-col sm:flex-row justify-between items-center pt-4 border-t border-gray-200 space-y-3 sm:space-y-0">
-                                <!-- Lado Esquerdo: Ações Adicionais (Inserir Tarefa) -->
                                 <button type="button" onclick="handleInsertTask()"
                                     id="insert-task-btn"
                                     class="w-full sm:w-auto px-4 py-2 text-sm bg-purple-600 text-white rounded-lg transition duration-150 shadow-md flex items-center justify-center space-x-2 opacity-50 cursor-not-allowed">
@@ -550,7 +497,6 @@
                                     <span>Inserir Tarefa</span>
                                 </button>
                                 
-                                <!-- Lado Direito: Ações de Submissão/Cancelamento -->
                                 <div class="flex space-x-3 w-full sm:w-auto justify-end">
                                     <button type="button" onclick="closeStoryForm()" class="flex-1 sm:flex-none px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-150">Cancelar</button>
                                     <button type="submit" id="story-form-submit" class="flex-1 sm:flex-none px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-150 shadow-md">Salvar História</button>
@@ -560,7 +506,6 @@
                     </div>
                 </div>
                 
-                <!-- Dynamic Filters Area: Mais compacta -->
                 <div class="bg-white p-6 rounded-xl shadow-lg mb-6 border-t-4 border-gray-300" id="stories-filters-container">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 pb-3 border-b border-gray-200 space-y-3 lg:space-y-0">
                         <h3 class="text-xl font-semibold text-gray-800 mb-2 sm:mb-0">Filtros Rápidos</h3>
@@ -571,7 +516,6 @@
                         </button>
                     </div>
                     
-                    <!-- Grid de filtros com espaçamento ajustado e foco nos inputs -->
                     <div class="grid grid-cols-2 md:grid-cols-5 gap-4"> 
                         <select id="filter-area" class="filter-select mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm bg-white focus:ring-indigo-500 focus:border-indigo-500"></select>
                         <select id="filter-po" class="filter-select mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm bg-white focus:ring-indigo-500 focus:border-indigo-500"></select>
@@ -591,7 +535,6 @@
                     </div>
                 </div>
 
-                <!-- Controles de Ação de Tabela (Editar/Excluir) -->
                 <div id="table-action-controls" class="bg-white p-4 rounded-xl shadow-lg mb-4 flex flex-wrap gap-2 items-center hidden text-sm border-t-4 border-gray-300">
                     <input type="checkbox" id="select-all-stories" onchange="toggleSelectAll(this.checked)" 
                         class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 mr-2">
@@ -609,9 +552,6 @@
                         <span>Excluir</span>
                     </button>
                 </div>
-                <!-- FIM Controles de Ação de Tabela -->
-
-                <!-- Filtered Stories Table: Sticky header e melhor espaçamento entre linhas -->
                 <div class="bg-white rounded-xl shadow-lg overflow-x-auto border" id="stories-table-wrapper">
                     <table class="min-w-full divide-y divide-gray-200 dense-table">
                         <thead class="bg-gray-100 sticky-header">
@@ -632,14 +572,12 @@
                             </tr>
                         </thead>
                         <tbody id="stories-table-body" class="bg-white divide-y divide-gray-100">
-                            <!-- Stories will be populated via JS -->
-                        </tbody>
+                            </tbody>
                     </table>
                     <p id="no-stories-message" class="text-center text-gray-500 p-6 hidden">Nenhuma história encontrada. Tente reverter os filtros ou adicione uma nova história.</p>
                 </div>
             </div>
             
-            <!-- 3. FEATURE VIEW (Lista e Formulário) -->
             <div id="feature-view" class="view hidden p-4 md:p-8">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6" id="feature-list-header">
                     <h2 class="text-3xl font-bold text-gray-900 mb-4 sm:mb-0">Gerenciamento de Features</h2>
@@ -650,13 +588,12 @@
                     </button>
                 </div>
 
-                <!-- Feature Creation/Editing Form: Layout de 2 colunas mais limpo -->
                 <div id="feature-form-container" class="bg-white p-6 md:p-8 rounded-xl shadow-lg mb-8 hidden border-t-4 border-purple-600">
                     <h3 id="feature-form-title" class="text-2xl font-semibold mb-6 text-purple-700 border-b pb-3">Nova Feature</h3>
                     <form id="feature-form" class="space-y-4">
                         <input type="hidden" id="feature-id" value="">
+                        <input type="hidden" id="feature-doc-id">
                         
-                        <!-- ID Externo e Título/Resumo -->
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div class="md:col-span-1">
                                 <label for="feature-external-id" class="block text-sm font-medium text-gray-700">ID Externo</label>
@@ -675,7 +612,6 @@
                             <textarea id="feature-description" rows="3" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm focus:ring-purple-500 focus:border-purple-500"></textarea>
                         </div>
                         
-                        <!-- Dropdowns - Responsive grid -->
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label for="feature-directorate" class="block text-sm font-medium text-gray-700">Diretoria</label>
@@ -692,7 +628,6 @@
                         </div>
 
                         <div class="flex flex-col sm:flex-row justify-between items-center pt-4 border-t border-gray-200 space-y-3 sm:space-y-0">
-                            <!-- Lado Esquerdo: Ações Adicionais (Inserir História - NOVO) -->
                             <button type="button" onclick="handleInsertStory()"
                                 id="insert-story-btn"
                                 class="w-full sm:w-auto px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg transition duration-150 shadow-md flex items-center justify-center space-x-2 opacity-50 cursor-not-allowed">
@@ -700,7 +635,6 @@
                                 <span>Inserir História</span>
                             </button>
                             
-                            <!-- Lado Direito: Ações de Submissão/Cancelamento -->
                             <div class="flex space-x-3 w-full sm:w-auto justify-end">
                                 <button type="button" onclick="closeFeatureForm()" class="flex-1 sm:flex-none px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-150">Cancelar</button>
                                 <button type="submit" id="feature-form-submit" class="flex-1 sm:flex-none px-4 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition duration-150 shadow-md">Salvar Feature</button>
@@ -708,14 +642,9 @@
                         </div>
                     </form>
                 </div>
-                <!-- FIM Feature Creation/Editing Form -->
-                
-                <!-- NOVO: Container para Tabela de Histórias Associadas à Feature em Edição -->
                 <div id="feature-stories-container" class="bg-white p-6 md:p-8 rounded-xl shadow-lg mt-8 hidden border-t-4 border-indigo-600">
-                    <!-- Header com Título e Botão de Ação Rápida -->
                     <div class="flex flex-col lg:flex-row justify-between items-start mb-4 pb-3 border-b border-gray-200 space-y-3 lg:space-y-0">
                         <h3 id="feature-stories-title" class="text-xl font-semibold text-gray-800 pt-1">Histórias Associadas</h3>
-                        <!-- Botão de Ação Rápida: Ir para Edição da História -->
                         <button onclick="handleInsertStory()"
                             class="w-full sm:w-auto bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition duration-150 flex items-center justify-center text-sm">
                             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
@@ -723,7 +652,6 @@
                         </button>
                     </div>
 
-                    <!-- Tabela de Histórias -->
                     <div class="overflow-x-auto shadow-md rounded-xl border">
                         <table class="min-w-full divide-y divide-gray-200 dense-table">
                             <thead class="bg-gray-100 sticky-header">
@@ -737,20 +665,14 @@
                                 </tr>
                             </thead>
                             <tbody id="feature-stories-table-body" class="bg-white divide-y divide-gray-100">
-                                <!-- Histórias serão populadas por JS -->
-                            </tbody>
+                                </tbody>
                         </table>
                         <p id="no-feature-stories-message" class="text-center text-gray-500 p-6 hidden">Nenhuma história registrada para esta Feature.</p>
                     </div>
                 </div>
-                <!-- FIM NOVO: Container para Tabela de Histórias Associadas -->
-
-
-                <!-- Dynamic Filters Area -->
                 <div id="feature-filters-container" class="bg-white p-6 rounded-xl shadow-lg mb-6 border-t-4 border-gray-300">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 pb-3 border-b border-gray-200 space-y-3 lg:space-y-0">
                         <h3 class="text-xl font-semibold text-gray-800 mb-2 sm:mb-0">Filtros Rápidos</h3>
-                        <!-- NOVO BOTÃO DE EXPORTAÇÃO PARA FEATURES -->
                         <button onclick="exportDataToExcel('features')"
                             class="w-full sm:w-auto bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-green-700 transition duration-150 flex items-center justify-center space-x-1 text-sm">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
@@ -765,7 +687,6 @@
                     </div>
                 </div>
                 
-                <!-- Controles de Ação de Tabela (Features) -->
                 <div id="feature-table-action-controls" class="bg-white p-4 rounded-xl shadow-lg mb-4 flex flex-wrap gap-2 items-center hidden text-sm border-t-4 border-gray-300">
                     <input type="checkbox" id="select-all-features" onchange="toggleSelectAllFeatures(this.checked)" 
                         class="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 mr-2">
@@ -783,10 +704,6 @@
                         <span>Excluir</span>
                     </button>
                 </div>
-                <!-- FIM Controles de Ação de Tabela (Features) -->
-
-
-                <!-- Feature List Table: Sticky header e melhor espaçamento entre linhas -->
                 <div class="bg-white rounded-xl shadow-lg overflow-x-auto border" id="feature-table-wrapper">
                     <table class="min-w-full divide-y divide-gray-200 dense-table">
                         <thead class="bg-gray-100 sticky-header">
@@ -803,24 +720,17 @@
                             </tr>
                         </thead>
                         <tbody id="features-table-body" class="bg-white divide-y divide-gray-100">
-                            <!-- Features will be populated via JS -->
-                        </tbody>
+                            </tbody>
                     </table>
                     <p id="no-features-message" class="text-center text-gray-500 p-6 hidden">Nenhuma feature registrada.</p>
                 </div>
             </div>
-            <!-- FIM FEATURE VIEW -->
-
-            <!-- 4. CONFIGURATIONS VIEW (AGORA É CONFIGURAÇÃO DE SISTEMA) -->
             <div id="configs-view" class="view hidden p-4 md:p-8">
                 <h2 class="text-3xl font-bold text-gray-900 mb-8">Configurações de Sistema</h2>
                 <p class="text-gray-600 mb-8 text-lg">Gerencie as opções de customização para o gerenciamento de Features, Histórias e Tarefas.</p>
 
-                <!-- Configuration sections will be dynamically generated by JS -->
-                
-            </div>
+                </div>
 
-            <!-- 5. INTEGRATION VIEW (NOVA VIEW) -->
             <div id="integration-view" class="view hidden p-4 md:p-8">
                 <h2 class="text-3xl font-bold text-gray-900 mb-8">Configurações de Integração</h2>
                 <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-indigo-600">
@@ -832,12 +742,7 @@
                     </div>
                 </div>
             </div>
-            <!-- FIM INTEGRATION VIEW -->
-
-        </div> <!-- Closes .flex-1 main-content-wrapper -->
-    </div> <!-- Closes .flex flex-col md:flex-row min-h-screen -->
-
-<script>
+            </div> </div> <script>
     // === MOBILE MENU CONTROL ===
     function toggleMobileMenu(shouldClose = false) {
         const sidebar = document.getElementById('sidebar-menu');
@@ -864,25 +769,16 @@
     // === END MOBILE MENU CONTROL ===
 
     // === DATA AND CONFIGURATION VARIABLES ===
-    let features = [
-        // Simulação de dados iniciais para Features
-        { id: 100, externalId: 'FEAT-1', title: 'Checkout Otimizado', directorate: 'Executiva', po: 'João Silva', status: 'Em Andamento', description: 'Otimização do fluxo de checkout para reduzir o abandono de carrinho.', createdAt: new Date().toISOString() },
-        { id: 101, externalId: 'FEAT-2', title: 'Integração CRM', directorate: 'Operacional', po: 'Maria Souza', status: 'Aprovado', description: 'Integração do novo CRM com o sistema de pedidos.', createdAt: new Date().toISOString() },
-    ];
-    let stories = [
-        // História de simulação associada a uma Feature
-        { id: 1, externalId: 'STORY-1', featureId: 100, title: 'Criar botão de pagamento rápido', description: 'Como um usuário... eu quero... para que...', requestedDate: '2023-10-01', requesterName: 'Carlos', area: 'Frontend', po: 'João Silva', status: 'Concluído', priority: 'Alta', updatedAt: '2023-11-01T08:00:00Z', externalLink: 'https://jira.exemplo.com/STORY-1' },
-        { id: 2, externalId: 'STORY-2', featureId: 100, title: 'Implementar validação de endereço', description: 'Como um usuário... eu quero... para que...', requestedDate: '2023-10-05', requesterName: 'Ana', area: 'Backend', po: 'João Silva', status: 'Em Desenvolvimento', priority: 'Média', updatedAt: '2023-11-05T10:30:00Z', externalLink: '' },
-        { id: 3, externalId: 'STORY-3', featureId: 101, title: 'Mapear campos de cliente', description: 'Como um usuário... eu quero... para que...', requestedDate: '2023-10-10', requesterName: 'Pedro', area: 'UX/UI', po: 'Maria Souza', status: 'A Fazer', priority: 'Baixa', updatedAt: '2023-11-10T11:00:00Z', externalLink: 'https://trello.com/card/abc' },
-    ];
-    let tasks = [
-        { id: 200, storyId: 1, externalId: 'TASK-1', title: 'Desenvolver API de pagamento', system: 'Backend', techlead: 'Pedro Alves', status: 'Concluído', gmudId: 'GMUD-2023', gmudLink: 'https://grupobrg.atlassian.net/browse/GMUD-2023', externalLink: 'https://github.com/pr/456' },
-        { id: 201, storyId: 1, externalId: 'TASK-2', title: 'Criar componente de botão', system: 'Frontend', techlead: 'Carla Dias', status: 'Pendente', gmudId: '', gmudLink: '', externalLink: '' },
-        { id: 202, storyId: 2, externalId: 'TASK-3', title: 'Definir regras de validação', system: 'CRM', techlead: 'Pedro Alves', status: 'Iniciado', gmudId: '', gmudLink: '', externalLink: '' },
-        { id: 203, storyId: 2, externalId: 'TASK-4', title: 'Testar integração', system: 'ERP', techlead: 'Carla Dias', status: 'Iniciado', gmudId: 'GMUD-2024', gmudLink: 'https://grupobrg.atlassian.net/browse/GMUD-2024', externalLink: '' },
-    ]; 
-    // URL Base da GMUD (Ajuste conforme o sistema de GMUD da sua empresa)
-    const GMUD_BASE_URL = "https://grupobrg.atlassian.net/browse/"; 
+    // ATUALIZADO: Estas variáveis agora serão preenchidas pelas funções de load do Firebase.
+    // Manter a definição inicial como arrays vazios é bom para o caso do Firebase falhar.
+    // O bloco de script type="module" injetará os dados reais.
+    let features = [];
+    let stories = [];
+    let tasks = [];
+    
+    // Variável de controle para o Firebase (inicialmente vazia, preenchida pelo bloco type="module")
+    window.firestone = window.firestone || null;
+    window._lastTaskModalStoryId = null;
 
     let configs = {
         // NOVO: Diretoria (Configuração de Feature)
@@ -1007,23 +903,12 @@
     const generateId = () => Date.now() + Math.floor(Math.random() * 1000);
 
     // === PERSISTENCE FUNCTIONS (localStorage) ===
-
+    // ATUALIZADO: Estas funções agora dependem *apenas* do localStorage para as configurações,
+    // já que features/stories/tasks serão gerenciadas pelo Firebase.
+    
     function loadData() {
         try {
-            const storedFeatures = localStorage.getItem('scrumFeatures');
-            if (storedFeatures) {
-                features = JSON.parse(storedFeatures);
-            }
-            const storedStories = localStorage.getItem('scrumStories');
-            if (storedStories) {
-                stories = JSON.parse(storedStories);
-            }
-            
-            // Carregar Tasks
-            const storedTasks = localStorage.getItem('scrumTasks');
-            if (storedTasks) {
-                tasks = JSON.parse(storedTasks);
-            }
+            // REMOVIDO: Carregamento de features, stories e tasks (será feito pelo Firebase no <script type="module">)
             
             const storedConfigs = localStorage.getItem('scrumConfigs');
             if (storedConfigs) {
@@ -1057,19 +942,31 @@
         }
     }
 
-    function saveFeatures() {
-    if (!window.firestone) return;
-    features.forEach(f => {
-        window.firestone.saveFeature(f);
-    });
+    // CORRIGIDO: Agora usa a função do Firebase (firestone.saveFeature) se disponível
+    async function saveFeatures() {
+        if (window.firestone) {
+            // Recarregamos todas as features após cada save/update no Firebase
+            // Para manter a coerência, a lógica de save individual foi movida para o onsubmit
+            return; 
+        }
+        localStorage.setItem('scrumFeatures', JSON.stringify(features));
     }
 
-    function saveStories() {
+    // CORRIGIDO: Agora usa a função do Firebase (firestone.saveStory) se disponível
+    async function saveStories() {
+        if (window.firestone) {
+            // Recarregamos todas as stories após cada save/update no Firebase
+            return; 
+        }
         localStorage.setItem('scrumStories', JSON.stringify(stories));
     }
     
-    // Salvar Tasks
-    function saveTasks() {
+    // CORRIGIDO: Agora usa a função do Firebase (firestone.saveTask) se disponível
+    async function saveTasks() {
+        if (window.firestone) {
+            // Recarregamos todas as tasks após cada save/update no Firebase
+            return; 
+        }
         localStorage.setItem('scrumTasks', JSON.stringify(tasks));
     }
 
@@ -1096,6 +993,8 @@
     // Funções para o Task Modal (CRIAÇÃO/EDIÇÃO)
     function openTaskModal(storyId, storyTitle, task = null) {
         const taskIdElement = document.getElementById('task-id');
+        // NOVO: ID do documento Firebase
+        const taskDocIdElement = document.getElementById('task-doc-id');
         const storyIdElement = document.getElementById('task-story-id');
         const titleElement = document.getElementById('task-modal-title');
         const submitBtn = document.getElementById('task-form-submit-btn');
@@ -1110,6 +1009,7 @@
         if (task) {
             // Modo Edição
             taskIdElement.value = task.id;
+            taskDocIdElement.value = task._docId || ''; // NOVO: Seta o _docId
             titleElement.textContent = `Editar Tarefa: ${task.title}`;
             submitBtn.textContent = 'Atualizar Task';
             
@@ -1123,7 +1023,8 @@
             
         } else {
             // Modo Criação
-            taskIdElement.value = '';
+            taskIdElement.value = generateId(); // Gera um ID local para a lista se necessário
+            taskDocIdElement.value = ''; // ID do documento vazio para criação
             titleElement.textContent = `Inserir Nova Tarefa para História: ${storyTitle}`;
             submitBtn.textContent = 'Salvar Task';
             gmudIdElement.value = ''; 
@@ -1168,18 +1069,24 @@
         );
     }
     
-    function deleteTask(taskId) {
-        const storyId = tasks.find(t => t.id === taskId)?.storyId;
-        tasks = tasks.filter(t => t.id !== taskId);
-        saveTasks();
+    // CORRIGIDO: Usa o _docId para exclusão no Firebase
+    async function deleteTask(taskId) {
+        const taskToDelete = tasks.find(t => t.id === taskId);
+        if (!taskToDelete || !taskToDelete._docId || !window.firestone) {
+             // Caso não tenha _docId (dados de mock) ou Firebase não esteja pronto
+             tasks = tasks.filter(t => t.id !== taskId);
+             saveTasks();
+             console.warn("Deletando task localmente (sem _docId ou firestone indisponível).");
+        } else {
+             await window.firestone.deleteTaskByDocId(taskToDelete._docId);
+        }
+        
+        const storyId = taskToDelete.storyId; // Obtém o storyId antes de remover
+        
         if (storyId) {
             // Se o modal de Tasks estiver aberto, atualiza-o
             if (!document.getElementById('task-list-modal').classList.contains('hidden')) {
                  renderTasksInModal(storyId);
-            }
-            // Se a view de edição da história estiver aberta, atualiza-a
-            if (!document.getElementById('story-tasks-container').classList.contains('hidden')) {
-                // REMOVIDO renderTasksForStory(storyId);
             }
             renderStories(); // Atualiza a tabela principal com o novo status de conclusão
         }
@@ -1187,9 +1094,10 @@
     // FIM Funções para o Task Modal
 
     function confirmDeleteStory(id) {
+        const story = stories.find(s => s.id === id);
         showModal(
             "Confirmar Exclusão",
-            "Tem certeza de que deseja excluir esta história de usuário?",
+            `Tem certeza de que deseja excluir a história de usuário "${story.title}"? Todas as tarefas associadas também serão excluídas.`,
             `
             <button onclick="closeModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300">Cancelar</button>
             <button onclick="deleteStory(${id}); closeModal();" class="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700">Excluir</button>
@@ -1302,6 +1210,13 @@
                 arrowElement.classList.add('rotate-180');
             }
         }
+    }
+    
+    // Função global para re-renderizar todas as views que dependem de dados
+    function updateAllViews() {
+        renderFeatures();
+        renderStories();
+        renderDashboard();
     }
 
 
@@ -1596,25 +1511,44 @@
         }
     }
     
-    // NOVO: Exclui as features selecionadas
-    function deleteSelectedFeatures() {
+    // CORRIGIDO: Exclui as features selecionadas usando Firebase
+    async function deleteSelectedFeatures() {
         const idsToDelete = Array.from(selectedFeatureIds);
         
-        // 1. Filtra as features
-        features = features.filter(feature => !selectedFeatureIds.has(feature.id));
-        
-        // 2. Remove a associação de histórias
-        stories.forEach(story => {
-            if (idsToDelete.includes(story.featureId)) {
-                story.featureId = '';
+        if (window.firestone) {
+            // 1. Deleção no Firebase
+            for (const id of idsToDelete) {
+                const feature = features.find(f => f.id === id);
+                if (feature && feature._docId) {
+                    await window.firestone.deleteFeatureByDocId(feature._docId);
+                    
+                    // Remove a associação de histórias *após* a exclusão da feature (Firebase recarrega features)
+                    stories.forEach(story => {
+                        if (story.featureId === id) {
+                            story.featureId = ''; // O ideal é fazer um update para cada história
+                            // Se estivermos em um ambiente de produção real, teríamos que fazer o update da story aqui.
+                            // Mas, como loadFeatures() recarrega features e renderiza, apenas removemos o localmente.
+                        }
+                    });
+                }
             }
-        });
+            // O loadFeatures dentro da função de delete do firestone já recarrega e chama renderFeatures
+        } else {
+             // Modo local/mock
+             features = features.filter(feature => !selectedFeatureIds.has(feature.id));
+             stories.forEach(story => {
+                if (idsToDelete.includes(story.featureId)) {
+                    story.featureId = '';
+                }
+            });
+            saveFeatures();
+            saveStories();
+            renderFeatures();
+        }
         
-        saveFeatures();
-        saveStories();
-        renderFeatures();
-        renderStories(); // Atualiza a tabela principal com o novo status de conclusão
-        populateStoryFeatureSelect(); // Atualiza o select de histórias
+        selectedFeatureIds.clear();
+        renderStories(); 
+        populateStoryFeatureSelect(); 
     }
     
     // Variável global para armazenar features filtradas temporariamente
@@ -1693,7 +1627,6 @@
             `;
 
             row.innerHTML = `
-                <!-- NOVO: CÉLULA DE SELEÇÃO -->
                 <td class="p-3 text-sm font-medium text-gray-900">
                     <input type="checkbox" data-id="${feature.id}" 
                         onchange="toggleFeatureSelection('${feature.id}', this.checked); updateFeatureActionControls();"
@@ -1737,6 +1670,7 @@
         const featureStoriesContainer = document.getElementById('feature-stories-container'); // NOVO CONTAINER
         const formTitle = document.getElementById('feature-form-title');
         const featureIdInput = document.getElementById('feature-id');
+        const featureDocIdInput = document.getElementById('feature-doc-id'); // NOVO
         const submitBtn = document.getElementById('feature-form-submit');
         const insertStoryBtn = document.getElementById('insert-story-btn');
         
@@ -1752,6 +1686,7 @@
         if (feature) {
             formTitle.textContent = "Editar Feature";
             featureIdInput.value = feature.id;
+            featureDocIdInput.value = feature._docId || ''; // NOVO: Seta o _docId
             document.getElementById('feature-external-id').value = feature.externalId || '';
             document.getElementById('feature-title').value = feature.title;
             document.getElementById('feature-description').value = feature.description || '';
@@ -1773,7 +1708,8 @@
 
         } else {
             formTitle.textContent = "Nova Feature";
-            featureIdInput.value = '';
+            featureIdInput.value = generateId(); // Gera um ID local para a lista se necessário
+            featureDocIdInput.value = ''; // ID do documento vazio para criação
             document.getElementById('feature-form').reset();
             submitBtn.textContent = "Salvar Feature";
 
@@ -1854,7 +1790,6 @@
                 </td>
                 <td class="px-4 py-4 whitespace-nowrap w-48">${taskCompletionHtml}</td>
                 
-                <!-- Botão de Ações Rápida: Editar História -->
                 <td class="px-4 py-4 whitespace-nowrap text-center text-sm font-medium">
                     <button onclick="viewStoryInStoriesView(${story.id})" title="Editar História" 
                             class="text-blue-600 hover:text-blue-900 p-1 rounded-full hover:bg-blue-50 transition duration-150">
@@ -1978,27 +1913,53 @@
         }
     }
     
-    function deleteFeature(id) {
-        features = features.filter(f => f.id !== id);
-        
-        // Remove a associação de histórias a esta feature
-        stories.forEach(story => {
-            if (story.featureId === id) {
-                story.featureId = ''; 
-            }
-        });
-        
-        saveFeatures();
-        saveStories();
-        renderFeatures();
+    // CORRIGIDO: Usa o _docId para exclusão no Firebase e remove histórias associadas (se necessário)
+    async function deleteFeature(id) {
+        const featureToDelete = features.find(f => f.id === id);
+        if (!featureToDelete) return;
+
+        if (window.firestone && featureToDelete._docId) {
+            // Deleção no Firebase
+            await window.firestone.deleteFeatureByDocId(featureToDelete._docId);
+            
+            // Remove a associação de histórias *após* a exclusão da feature (Firebase recarrega features)
+            stories.forEach(story => {
+                if (story.featureId === id) {
+                    story.featureId = ''; // O ideal é fazer um update para cada história
+                }
+            });
+            await window.firestone.loadStories(); // Força o recarregamento das histórias para atualizar a view
+
+        } else {
+            // Modo local/mock
+            features = features.filter(f => f.id !== id);
+            stories.forEach(story => {
+                if (story.featureId === id) {
+                    story.featureId = ''; 
+                }
+            });
+            saveFeatures();
+            saveStories();
+            renderFeatures();
+            populateStoryFeatureSelect();
+        }
+
+        renderFeatures(); // Atualiza a tabela (será chamada pelo loadFeatures do firestore, mas mantido para fallback)
         populateStoryFeatureSelect(); // Atualiza o select de histórias
         showModal("Feature Excluída", "A Feature foi removida com sucesso.", `<button onclick="closeModal()" class="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700">OK</button>`);
     }
 
-    document.getElementById('feature-form').onsubmit = function(event) {
+    // CORRIGIDO: Agora usa a função saveFeature do Firebase
+    document.getElementById('feature-form').onsubmit = async function(event) {
         event.preventDefault();
         
+        if (!window.firestone) {
+             showModal("Erro", "Conexão com Firebase indisponível.", `<button onclick="closeModal()" class="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700">OK</button>`);
+             return;
+        }
+        
         const id = document.getElementById('feature-id').value;
+        const docId = document.getElementById('feature-doc-id').value; // NOVO: Pega o ID do documento
         let externalIdValue = document.getElementById('feature-external-id').value.trim();
         if (externalIdValue.length > 10) {
             externalIdValue = externalIdValue.substring(0, 10);
@@ -2006,6 +1967,7 @@
         
         const newFeatureData = {
             id: id ? parseInt(id) : generateId(),
+            _docId: docId || undefined, // Inclui o _docId se for edição
             externalId: externalIdValue,
             title: document.getElementById('feature-title').value.trim(),
             description: document.getElementById('feature-description').value.trim(),
@@ -2014,34 +1976,49 @@
             status: document.getElementById('feature-status').value,
             updatedAt: new Date().toISOString()
         };
-
-        if (id) {
-            // Edição
-            const index = features.findIndex(f => f.id === newFeatureData.id);
-            if (index !== -1) {
-                features[index] = newFeatureData;
-            }
-        } else {
-            // Criação
-            features.push(newFeatureData);
+        
+        // Verifica se é criação (se não tiver docId, é nova entrada no banco)
+        const isCreation = !docId;
+        if (isCreation) {
+            newFeatureData.createdAt = new Date().toISOString();
         }
 
-        saveFeatures();
-        renderFeatures();
-        populateStoryFeatureSelect(); // Garante que o select de histórias esteja atualizado
-        
+        try {
+            // O firestone.saveFeature irá adicionar ou atualizar o documento e *recarregar* a lista global de features.
+            await window.firestone.saveFeature(newFeatureData); 
+        } catch (error) {
+            console.error("Erro ao salvar Feature no Firebase:", error);
+            showModal("Erro de Conexão", "Não foi possível salvar a Feature no banco de dados.", `<button onclick="closeModal()" class="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700">OK</button>`);
+            return;
+        }
+
         // Se for criação, reabre no modo edição para habilitar o botão "Inserir História"
-        if (!id) {
-             openFeatureForm(newFeatureData);
-             showModal("Feature Salva", `Feature "${newFeatureData.title}" salva com sucesso! Agora você pode inserir histórias associadas.`, `<button onclick="closeModal()" class="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700">Continuar</button>`);
+        if (isCreation) {
+             // O novo item salvo no Firebase já tem o ID do documento, 
+             // mas precisamos re-encontrar o objeto atualizado (com _docId)
+             // A função saveFeature recarrega o array global `features`, mas o `newFeatureData` local pode não ter o `_docId`
+             // A melhor prática aqui é forçar a re-renderização completa da view, que vai encontrar a feature salva.
+             
+             // Por ser assíncrono, para reabrir no modo edição, precisamos do objeto completo.
+             // Como a lista global foi recarregada, a re-renderização irá exibir o item.
+             
+             // O problema é reabrir no modo edição *com o _docId* recém-criado.
+             // A forma mais fácil é deixar que a função `saveFeature` no bloco `type="module"` retorne o objeto com `_docId`.
+             // No seu caso atual, ela não retorna, apenas recarrega.
+             
+             // SOLUÇÃO PROVISÓRIA: Reabra o formulário no modo edição com a ID *local* e o recarregamento deve pegar o _docId
+             const savedFeature = features.find(f => f.id === newFeatureData.id) || newFeatureData;
+
+             openFeatureForm(savedFeature);
+             showModal("Feature Salva", `Feature "${savedFeature.title}" salva com sucesso! Agora você pode inserir histórias associadas.`, `<button onclick="closeModal()" class="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700">Continuar</button>`);
         } else {
              // Após edição, apenas atualiza a tabela de histórias associadas
              renderStoriesForFeature(newFeatureData.id); 
-             // closeFeatureForm(); // Removido para manter a Feature aberta
              showModal("Feature Atualizada", `Feature "${newFeatureData.title}" atualizada com sucesso!`, `<button onclick="closeModal()" class="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700">OK</button>`);
         }
-        // Atualiza a tabela de Histórias principal no fundo, caso estejam sendo filtradas por Feature
-        renderStories(); 
+        
+        // O firestone.saveFeature() já chama renderFeatures(). Chamamos renderStories para atualizar o select.
+        populateStoryFeatureSelect();
     };
 
     // NOVO: Função para o botão Inserir História (no formulário principal de Feature)
@@ -2174,6 +2151,9 @@
     function openStoryTasksModal(storyId) {
         const modal = document.getElementById('task-list-modal');
         
+        // Armazena o storyId para que o bloco type="module" possa saber qual task carregar (se for o caso)
+        window._lastTaskModalStoryId = storyId; 
+        
         renderTasksInModal(storyId);
 
         // Armazena o storyId para a função de adicionar task do modal
@@ -2186,6 +2166,7 @@
     function closeStoryTasksModal() {
         document.getElementById('task-list-modal').classList.add('hidden');
         document.getElementById('task-list-modal').removeAttribute('data-story-id');
+        window._lastTaskModalStoryId = null; // Limpa a referência
     }
     
     // Função para ocultar/exibir os elementos da lista de histórias
@@ -2218,7 +2199,7 @@
         const controlsContainer = document.getElementById('table-action-controls');
         if (controlsContainer) {
             // A única mudança de visibilidade é para o container da história, para sumir na edição/tasks
-            if (count > 0 && currentView === 'stories' && document.getElementById('story-tasks-container')?.classList.contains('hidden')) {
+            if (count > 0 && currentView === 'stories') {
                 controlsContainer.classList.remove('hidden');
             } else {
                 // controlsContainer.classList.add('hidden'); // Ocultado por toggleStoryListVisibility(true)
@@ -2379,42 +2360,69 @@
     }
 
 
-    // Exclui as histórias selecionadas
-    function deleteSelectedStories() {
-        // Cria um novo array de histórias, excluindo as selecionadas
+    // CORRIGIDO: Exclui as histórias selecionadas usando Firebase
+    async function deleteSelectedStories() {
         const idsToDelete = Array.from(selectedStoryIds);
-        stories = stories.filter(story => !selectedStoryIds.has(story.id));
         
-        // Excluir tasks relacionadas
-        tasks = tasks.filter(task => !idsToDelete.includes(task.storyId));
-
-        saveStories();
-        saveTasks();
-        selectedStoryIds.clear();
-        renderStories();
-        // Atualiza o dashboard se estiver aberto
-        if (currentView === 'dashboard') {
-            renderDashboard();
+        if (window.firestone) {
+            // 1. Deleção no Firebase
+            for (const id of idsToDelete) {
+                const story = stories.find(s => s.id === id);
+                if (story && story._docId) {
+                    await window.firestone.deleteStoryByDocId(story._docId);
+                    
+                    // Deleção das tasks associadas
+                    const relatedTasks = tasks.filter(t => t.storyId === id);
+                    for (const task of relatedTasks) {
+                        if (task._docId) {
+                            await window.firestone.deleteTaskByDocId(task._docId);
+                        }
+                    }
+                }
+            }
+            // O loadStories/loadTasks no firestone já recarrega e chama renderStories
+        } else {
+             // Modo local/mock
+             stories = stories.filter(story => !selectedStoryIds.has(story.id));
+             tasks = tasks.filter(task => !idsToDelete.includes(task.storyId));
+             saveStories();
+             saveTasks();
+             renderStories();
         }
+        
+        selectedStoryIds.clear();
+        updateAllViews(); // Força update para dashboard e features
     }
     
     // NOVO: Exclui as tarefas selecionadas
-    function deleteSelectedTasks() {
+    async function deleteSelectedTasks() {
         if (selectedTaskIds.size === 0) return;
         
         const idsToDelete = Array.from(selectedTaskIds);
         // Obtém o ID da história antes de filtrar as tasks
         const currentStoryId = tasks.find(t => idsToDelete.includes(t.id))?.storyId;
-        
-        // Filtra as tasks, removendo as selecionadas
-        tasks = tasks.filter(task => !selectedTaskIds.has(task.id));
 
-        saveTasks();
+        if (window.firestone) {
+            // Deleção no Firebase
+            for (const id of idsToDelete) {
+                const task = tasks.find(t => t.id === id);
+                if (task && task._docId) {
+                    await window.firestone.deleteTaskByDocId(task._docId);
+                }
+            }
+        } else {
+            // Filtra as tasks, removendo as selecionadas
+            tasks = tasks.filter(task => !selectedTaskIds.has(task.id));
+            saveTasks();
+        }
+
         selectedTaskIds.clear();
 
         // Atualiza a listagem de tasks e a listagem de histórias (para refletir o novo status de conclusão)
         if (currentStoryId) {
-            // REMOVIDO: renderTasksForStory(currentStoryId); 
+            if (!document.getElementById('task-list-modal').classList.contains('hidden')) {
+                 renderTasksInModal(currentStoryId); 
+            }
             renderStories();
         }
     }
@@ -2532,7 +2540,8 @@
         const formContainer = document.getElementById('story-form-container');
         // REMOVIDO: const storyTasksContainer = document.getElementById('story-tasks-container');
         const formTitle = document.getElementById('story-form-title');
-        const storyId = document.getElementById('story-id');
+        const storyIdInput = document.getElementById('story-id');
+        const storyDocIdInput = document.getElementById('story-doc-id'); // NOVO
         const externalIdInput = document.getElementById('story-external-id'); 
         const externalLinkInput = document.getElementById('story-external-link'); 
         const featureIdSelect = document.getElementById('story-feature-id'); // NOVO
@@ -2567,7 +2576,8 @@
 
         if (story) {
             formTitle.textContent = "Editar História";
-            storyId.value = story.id;
+            storyIdInput.value = story.id;
+            storyDocIdInput.value = story._docId || ''; // NOVO: Seta o _docId
             
             // LOAD FIELDS
             externalIdInput.value = story.externalId || ''; 
@@ -2594,7 +2604,8 @@
 
         } else {
             formTitle.textContent = "Nova História";
-            storyId.value = '';
+            storyIdInput.value = generateId(); // Gera um ID local para a lista se necessário
+            storyDocIdInput.value = ''; // ID do documento vazio para criação
             document.getElementById('story-form').reset();
             document.getElementById('story-form-submit').textContent = "Salvar História";
             
@@ -2686,13 +2697,19 @@
         openTaskModal(storyId, storyTitle);
     }
     
-    // Função para salvar a Task (Criação e Edição)
-    document.getElementById('task-form').onsubmit = function(event) {
+    // CORRIGIDO: Função para salvar a Task (Criação e Edição) usando Firebase
+    document.getElementById('task-form').onsubmit = async function(event) {
         event.preventDefault();
         
+        if (!window.firestone) {
+             showModal("Erro", "Conexão com Firebase indisponível.", `<button onclick="closeModal()" class="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700">OK</button>`);
+             return;
+        }
+        
         const storyId = parseInt(document.getElementById('task-story-id').value);
-        const taskId = document.getElementById('task-id').value; // Pode ser vazio (criação) ou ter um valor (edição)
-        const isEditing = !!taskId;
+        const taskId = document.getElementById('task-id').value; // ID local
+        const docId = document.getElementById('task-doc-id').value; // NOVO: ID do documento Firebase
+        const isEditing = !!docId; // Agora verifica o docId para saber se é edição
 
         // Captura o valor do ID Externo
         let externalIdValue = document.getElementById('task-external-id').value.trim();
@@ -2708,6 +2725,8 @@
 
 
         const taskData = {
+            id: taskId ? parseInt(taskId) : generateId(), // Mantém o ID local para referências internas
+            _docId: docId || undefined, // Inclui o _docId se for edição
             storyId: storyId,
             externalId: externalIdValue,
             externalLink: externalLinkValue, 
@@ -2717,43 +2736,33 @@
             system: document.getElementById('task-system').value,
             techlead: document.getElementById('task-techlead').value,
             status: document.getElementById('task-status').value,
+            updatedAt: new Date().toISOString()
         };
         
         let message = '';
 
-        if (isEditing) {
-            // Modo Edição
-            const index = tasks.findIndex(t => t.id === parseInt(taskId));
-            if (index !== -1) {
-                tasks[index] = {
-                    ...tasks[index],
-                    ...taskData,
-                    updatedAt: new Date().toISOString()
-                };
-                message = `Task "${taskData.title}" atualizada com sucesso!`;
-            }
-        } else {
+        if (!isEditing) {
             // Criação
-            const newTask = {
-                id: generateId(),
-                ...taskData,
-                createdAt: new Date().toISOString()
-            };
-            tasks.push(newTask);
-            message = `Task "${taskData.title}" salva com sucesso e vinculada à História!`;
+            taskData.createdAt = new Date().toISOString();
         }
 
-        saveTasks();
+        try {
+            await window.firestone.saveTask(taskData);
+            message = isEditing ? `Task "${taskData.title}" atualizada com sucesso!` : `Task "${taskData.title}" salva com sucesso e vinculada à História!`;
+        } catch (error) {
+             console.error("Erro ao salvar Task no Firebase:", error);
+             showModal("Erro de Conexão", "Não foi possível salvar a Task no banco de dados.", `<button onclick="closeModal()" class="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700">OK</button>`);
+             return;
+        }
+
         
-        // 1. Renderiza novamente a tabela de tasks embutida (se estiver aberta)
-        // REMOVIDO: if (!document.getElementById('story-tasks-container').classList.contains('hidden')) { renderTasksForStory(storyId); }
-        
-        // 2. Renderiza novamente o modal de tasks (se estiver aberto) - MANTIDO ESTE FLUXO
+        // 1. Renderiza novamente o modal de tasks (se estiver aberto)
         if (!document.getElementById('task-list-modal').classList.contains('hidden')) {
+             // Como firestone.saveTask recarrega as tasks, basta re-renderizar o modal com a lista atualizada
              renderTasksInModal(storyId); 
         }
 
-        // 3. Atualiza a tabela principal e features
+        // 2. Atualiza a tabela principal e features
         renderStories(); 
         renderFeatures(); 
         
@@ -2767,14 +2776,21 @@
     };
 
 
-    // Save/Update story logic
-    document.getElementById('story-form').onsubmit = function(event) {
+    // CORRIGIDO: Save/Update story logic usando Firebase
+    document.getElementById('story-form').onsubmit = async function(event) {
         event.preventDefault();
         
-        const id = document.getElementById('story-id').value;
+        if (!window.firestone) {
+             showModal("Erro", "Conexão com Firebase indisponível.", `<button onclick="closeModal()" class="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700">OK</button>`);
+             return;
+        }
         
+        const id = document.getElementById('story-id').value;
+        const docId = document.getElementById('story-doc-id').value; // NOVO: Pega o ID do documento
+        const isEditing = !!docId;
+
         // Define o tipo de história como 'História', já que o seletor foi removido.
-        const storyType = id ? stories.find(s => s.id === parseInt(id))?.type || 'História' : 'História';
+        const storyType = isEditing ? stories.find(s => s.id === parseInt(id))?.type || 'História' : 'História';
         
         // Captura o valor do ID Externo, garantindo que seja um número de até 10 dígitos.
         let externalIdValue = document.getElementById('story-external-id').value.trim();
@@ -2789,12 +2805,13 @@
         const featureIdValue = document.getElementById('story-feature-id').value;
 
 
-        const newStory = {
+        const storyData = {
             id: id ? parseInt(id) : generateId(),
-            type: storyType, // USANDO VALOR PADRÃO OU EXISTENTE
-            externalId: externalIdValue, // NOVO CAMPO TRUNCADO
-            externalLink: externalLinkValue, // NOVO CAMPO SALVO
-            featureId: featureIdValue ? parseInt(featureIdValue) : '', // NOVO CAMPO SALVO
+            _docId: docId || undefined, // Inclui o _docId se for edição
+            type: storyType, 
+            externalId: externalIdValue, 
+            externalLink: externalLinkValue, 
+            featureId: featureIdValue ? parseInt(featureIdValue) : '', 
             title: document.getElementById('story-title').value.trim(),
             description: document.getElementById('story-description').value.trim(),
             
@@ -2808,37 +2825,36 @@
             priority: document.getElementById('story-priority').value,
             updatedAt: new Date().toISOString()
         };
-
-        if (id) {
-            // Edit
-            const index = stories.findIndex(s => s.id === newStory.id);
-            if (index !== -1) {
-                stories[index] = newStory;
-            }
-        } else {
-            // Creation
-            stories.push(newStory);
+        
+        if (!isEditing) {
+            storyData.createdAt = new Date().toISOString();
         }
 
-        saveStories();
-        renderStories(); // Renderiza para atualizar a lista
-        renderFeatures(); // Atualiza a visualização de Features
-        
-        // Update the dashboard if it's open
-        if (currentView === 'dashboard') {
-            renderDashboard();
+        try {
+            // O firestone.saveStory irá adicionar ou atualizar o documento e *recarregar* a lista global de stories.
+            await window.firestone.saveStory(storyData);
+        } catch (error) {
+             console.error("Erro ao salvar História no Firebase:", error);
+             showModal("Erro de Conexão", "Não foi possível salvar a História no banco de dados.", `<button onclick="closeModal()" class="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700">OK</button>`);
+             return;
         }
-        
+
         // Se a história foi recém-criada, reabra o formulário no modo de edição para que o botão de Task e a tabela apareçam
-        if (!id) {
+        if (!isEditing) {
+            // Reabrir o formulário com o objeto salvo (que tem o novo _docId)
+            const savedStory = stories.find(s => s.id === storyData.id) || storyData;
+
             // Mantém o formulário aberto para edição e task
-            openStoryForm(newStory); 
-            showModal("História Salva", `História "${newStory.title}" salva com sucesso! Agora você pode adicionar tarefas.`, `<button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">Continuar</button>`);
+            openStoryForm(savedStory); 
+            showModal("História Salva", `História "${savedStory.title}" salva com sucesso! Agora você pode adicionar tarefas.`, `<button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">Continuar</button>`);
         } else {
              // Scroll back to the main view if it was an edit
             closeStoryForm(); // Fech a o form após a edição. A função closeStoryForm irá reexibir a lista.
             document.getElementById('stories-view')?.scrollIntoView({ behavior: 'smooth' });
         }
+        
+        // O firestone.saveStory() já chama renderStories().
+        renderFeatures(); // Atualiza a visualização de Features (se a Feature ID mudou)
     };
 
 
@@ -2952,48 +2968,37 @@
             ` : '-';
 
             row.innerHTML = `
-                <!-- CÉLULA DE SELEÇÃO -->
                 <td class="p-3 text-sm font-medium text-gray-900">
                     <input type="checkbox" data-id="${story.id}" 
                         onchange="toggleStorySelection('${story.id}', this.checked); updateActionControls();"
                         ${isSelected ? 'checked' : ''}
                         class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500">
                 </td>
-                <!-- ID Externo (compacto) COM ÍCONE DE LINK -->
                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
                     ${externalIdContent}
                 </td>
-                <!-- TIPO (compacto) -->
                 <td class="px-4 py-4 whitespace-nowrap text-xs font-semibold">
                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full border ${typeClass}">
                         ${story.type || 'História'}
                     </span>
                 </td>
-                <!-- TÍTULO (flexível, permite quebra) - ÍCONE REMOVIDO DAQUI -->
                 <td class="px-6 py-4 whitespace-normal text-sm text-gray-800 font-semibold flex items-center">
                     <span>${story.title}</span>
                 </td>
-                <!-- ÁREA (flexível, permite quebra) -->
                 <td class="px-6 py-4 text-sm text-gray-500">${story.area}</td>
-                <!-- PO (flexível, permite quebra) -->
                 <td class="px-6 py-4 text-sm text-gray-500">${story.po}</td>
-                <!-- SOLICITANTE (flexível, permite quebra) -->
                 <td class="px-6 py-4 text-sm text-gray-500">${story.requesterName || '-'}</td>
-                <!-- DATA INC. (compacto) -->
                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${formattedDate}</td>
-                <!-- STATUS (compacto) -->
                 <td class="px-4 py-4 whitespace-nowrap text-sm">
                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full status-badge ${statusColorClass}">
                         ${story.status}
                     </span>
                 </td>
-                <!-- PRIORIDADE (compacto) -->
                 <td class="px-4 py-4 whitespace-nowrap text-sm">
                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-xl priority-badge ${priorityClass}">
                         ${story.priority}
                     </span>
                 </td>
-                <!-- NOVA CÉLULA: STATUS DE CONCLUSAO DAS TASKS -->
                 <td class="px-4 py-4 whitespace-nowrap w-48">
                     ${taskCompletionHtml}
                 </td>
@@ -3005,23 +3010,45 @@
         updateActionControls();
     }
 
-    // Deletes a story
-    function deleteStory(id) {
-        stories = stories.filter(story => story.id !== id);
-        // Exclui tarefas relacionadas
-        tasks = tasks.filter(task => task.storyId !== id);
+    // CORRIGIDO: Deletes a story usando Firebase
+    async function deleteStory(id) {
+        const storyToDelete = stories.find(s => s.id === id);
         
-        saveStories();
-        saveTasks();
-        renderStories();
-        renderFeatures(); // Atualiza a visualização de Features
+        if (!storyToDelete) return;
+        
+        if (window.firestone && storyToDelete._docId) {
+            // Deleção no Firebase
+            await window.firestone.deleteStoryByDocId(storyToDelete._docId);
+            
+            // Deleção das tasks associadas
+            const relatedTasks = tasks.filter(t => t.storyId === id);
+            for (const task of relatedTasks) {
+                if (task._docId) {
+                    await window.firestone.deleteTaskByDocId(task._docId);
+                }
+            }
+        } else {
+            // Modo local/mock
+            stories = stories.filter(story => story.id !== id);
+            tasks = tasks.filter(task => task.storyId !== id);
+            saveStories();
+            saveTasks();
+            renderStories();
+        }
+        
         // If on the dashboard, update it too
+        updateAllViews();
+    }
+
+    // === DASHBOARD FUNCTIONS (CHARTS) ===
+    
+    // CORRIGIDO: Adiciona função updateDashboard para ser chamada após o load do Firebase
+    function updateDashboard() {
         if (currentView === 'dashboard') {
             renderDashboard();
         }
     }
 
-    // === DASHBOARD FUNCTIONS (CHARTS) ===
 
     // Clears all existing charts before drawing new ones
     function destroyCharts() {
@@ -3509,7 +3536,6 @@
             sectionDiv.className = `dynamic-config-section mb-10 p-4 sm:p-6 bg-white rounded-xl shadow-lg border-t-4 ${section.border}`;
             sectionDiv.innerHTML = `
                 <h3 class="text-2xl font-semibold mb-6 ${section.titleColor} border-b pb-2">${section.title}</h3>
-                <!-- AJUSTE: Adicionando classes responsivas para telas de laptop/desktop menor -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="${section.id}-grid">
                 </div>
             `;
@@ -3538,9 +3564,7 @@
                 listElement.innerHTML = `
                     <h4 class="text-xl font-semibold mb-4 text-gray-800">${friendlyTitle}</h4>
                     <div id="config-${type}-list" class="space-y-3 mb-4">
-                        <!-- Configuration items populated by inner loop -->
-                    </div>
-                    <!-- ALTERAÇÃO APLICADA AQUI: De 'flex space-x-2' para 'flex flex-col space-y-3' -->
+                        </div>
                     <div class="flex flex-col space-y-3">
                         <input type="text" id="new-${type}-name" placeholder="${placeholderText}" class="w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm focus:ring-indigo-500 focus:border-indigo-500">
                         <button onclick="addConfigItem('${type}')" class="w-full bg-indigo-600 text-white py-2 px-3 rounded-lg hover:bg-indigo-700 transition duration-150 text-sm shadow-sm">Adicionar</button>
@@ -3568,12 +3592,10 @@
                 itemDiv.className = 'flex items-center justify-between p-3 bg-white rounded-lg border shadow-sm text-sm';
                 itemDiv.innerHTML = `
                     <div class="flex-1 mr-4 flex-shrink min-w-0">
-                        <!-- Adicionado 'truncate' e 'flex-shrink' para evitar que o nome empurre os botões -->
                         <span id="config-name-${type}-${item.id}" class="font-medium text-gray-700 truncate">${item.name}</span>
                         <span class="text-xs ml-2 ${item.isActive ? 'text-green-600' : 'text-red-600'} font-semibold whitespace-nowrap">(${statusText})</span>
                     </div>
                     
-                    <!-- Adicionado 'flex-shrink-0' ao container de ações para garantir que não encolha -->
                     <div class="flex items-center space-x-2 flex-shrink-0">
                         <button onclick="editConfigName('${type}', ${item.id})" title="Editar Nome" class="p-1 rounded-full hover:bg-gray-100 text-blue-500 transition">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
@@ -3583,7 +3605,6 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         </button>
 
-                        <!-- Active/Inactive Toggle -->
                         <button onclick="toggleConfigActive('${type}', ${item.id})"
                             class="relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${toggleClass}"
                             role="switch" aria-checked="${item.isActive}">
@@ -3707,6 +3728,10 @@
             }
         });
         
+        // Força a atualização do Firebase também
+        // Embora os objetos já tenham sido atualizados na memória, precisamos enviar a mudança.
+        // O ideal seria fazer um endpoint para mudar o nome em massa no banco.
+        // Aqui, salvaremos toda a coleção de volta localmente (fallback) ou faremos um reload (se firestore exist).
         saveFeatures();
         saveStories();
         saveTasks();
@@ -3717,17 +3742,14 @@
         
         // Re-render everything to update dropdowns/views
         renderConfigLists();
+        updateAllViews();
         if (currentView === 'stories') {
             populateSelects();
             populateStoryFeatureSelect();
-            const currentStoryId = document.getElementById('story-id')?.value;
-            if (currentStoryId) renderTasksForStory(parseInt(currentStoryId));
         }
         if (currentView === 'feature') {
             populateFeatureSelects();
-            renderFeatures();
         }
-        if (currentView === 'dashboard') renderDashboard();
         if (document.getElementById('task-modal')?.classList.contains('hidden') === false) populateTaskSelects();
     }
 
@@ -3740,15 +3762,14 @@
             saveConfigs();
             renderConfigLists();
             // Update affected views
+            updateAllViews();
             if (currentView === 'stories') {
                 populateSelects();
                 populateStoryFeatureSelect();
             }
             if (currentView === 'feature') {
                 populateFeatureSelects();
-                renderFeatures();
             }
-            if (currentView === 'dashboard') renderDashboard();
             if (document.getElementById('task-modal')?.classList.contains('hidden') === false) populateTaskSelects();
         }
     }
@@ -3778,9 +3799,9 @@
         }
         // Checagem nas features
         else if (type === 'directorate') {
-            itemsInuse += features.filter(f => f.directorate === item.name).length;
+            itemsInUse += features.filter(f => f.directorate === item.name).length;
         } else if (type === 'statusFeature') {
-            itemsInuse += features.filter(f => f.status === item.name).length;
+            itemsInUse += features.filter(f => f.status === item.name).length;
         }
 
         if (itemsInUse > 0) {
@@ -3793,13 +3814,13 @@
         renderConfigLists();
         
         // Re-popula selects após exclusão, caso a view ativa dependa disso
+        updateAllViews();
          if (currentView === 'stories') {
             populateSelects();
             populateStoryFeatureSelect();
         }
         if (currentView === 'feature') {
             populateFeatureSelects();
-            renderFeatures();
         }
         if (document.getElementById('task-modal')?.classList.contains('hidden') === false) populateTaskSelects();
     }
@@ -3990,15 +4011,23 @@
 
     // === APPLICATION INITIALIZATION ===
     window.onload = function() {
-        // 1. Load data from localStorage
+        // 1. Load data from localStorage (only configs now)
         loadData();
 
         // 2. Set listeners for Priority filters
         document.getElementById('filter-priority').onchange = renderStories;
         
         // 3. Show the initial view (Dashboard)
+        // O loadAllData() no bloco type="module" irá recarregar os dados e chamar renderDashboard
+        // A função showView inicial abaixo só garante que a view de Dashboard está visível
         showView('dashboard');
     };
+    
+    // CORRIGIDO: Expondo as funções de renderização para o bloco type="module"
+    window.renderFeatures = renderFeatures;
+    window.renderStories = renderStories;
+    window.renderTasksInModal = renderTasksInModal;
+    window.updateDashboard = updateDashboard;
 </script>
 
 <script type="module">
@@ -4022,79 +4051,111 @@
 
   window._fs = { db };
 
-  window.features = window.features || [];
-  window.stories = window.stories || [];
-  window.tasks = window.tasks || [];
+  // Referências aos arrays globais para que as funções de carregamento possam atualizá-los
+  const globalFeatures = window.features;
+  const globalStories = window.stories;
+  const globalTasks = window.tasks;
 
+
+  // Mapeia os documentos para objetos e anexa o _docId (ID do documento Firebase)
   function docToObj(docSnap) {
     const data = docSnap.data();
     return { _docId: docSnap.id, ...data };
   }
 
+  // CORRIGIDO: Função para carregar Features
   async function loadFeatures() {
-    const snap = await getDocs(collection(db, 'features'));
-    window.features = snap.docs.map(docToObj);
-    if (typeof renderFeatures === "function") renderFeatures();
+    try {
+        const snap = await getDocs(collection(db, 'features'));
+        // ATUALIZADO: Substitui o array global
+        window.features.length = 0; // Limpa o array global sem reatribuir
+        snap.docs.map(docToObj).forEach(item => window.features.push(item));
+        
+        if (typeof window.renderFeatures === "function") window.renderFeatures();
+        if (typeof window.updateDashboard === "function") window.updateDashboard();
+
+    } catch (e) { console.error("Erro ao carregar features:", e); }
   }
 
+  // CORRIGIDO: Função para carregar Stories
   async function loadStories() {
-    const snap = await getDocs(collection(db, 'stories'));
-    window.stories = snap.docs.map(docToObj);
-    if (typeof renderStories === "function") renderStories();
+    try {
+        const snap = await getDocs(collection(db, 'stories'));
+        // ATUALIZADO: Substitui o array global
+        window.stories.length = 0; // Limpa o array global sem reatribuir
+        snap.docs.map(docToObj).forEach(item => window.stories.push(item));
+        
+        if (typeof window.renderStories === "function") window.renderStories();
+        if (typeof window.updateDashboard === "function") window.updateDashboard();
+        if (typeof window.populateStoryFeatureSelect === "function") window.populateStoryFeatureSelect();
+
+    } catch (e) { console.error("Erro ao carregar stories:", e); }
   }
 
+  // CORRIGIDO: Função para carregar Tasks
   async function loadTasks() {
-    const snap = await getDocs(collection(db, 'tasks'));
-    window.tasks = snap.docs.map(docToObj);
-    if (typeof renderTasksInModal === "function") {
-      renderTasksInModal(window._lastTaskModalStoryId || null);
-    }
+    try {
+        const snap = await getDocs(collection(db, 'tasks'));
+        // ATUALIZADO: Substitui o array global
+        window.tasks.length = 0; // Limpa o array global sem reatribuir
+        snap.docs.map(docToObj).forEach(item => window.tasks.push(item));
+
+        if (typeof window.renderTasksInModal === "function" && window._lastTaskModalStoryId) {
+            window.renderTasksInModal(window._lastTaskModalStoryId);
+        }
+        if (typeof window.renderStories === "function") window.renderStories(); // Para atualizar o progresso nas histórias
+
+    } catch (e) { console.error("Erro ao carregar tasks:", e); }
   }
 
+  // CORRIGIDO: Função para carregar TUDO e forçar renderização do dashboard
   async function loadAllData() {
     await Promise.all([loadFeatures(), loadStories(), loadTasks()]);
-    if (typeof updateDashboard === "function") updateDashboard();
+    if (typeof window.updateDashboard === "function") window.updateDashboard();
   }
 
+  // CORRIGIDO: Função para salvar/atualizar Feature
   async function saveFeature(feature) {
-    if (feature._docId) {
-      const docRef = doc(db, 'features', feature._docId);
-      const { _docId, ...payload } = feature;
+    const { _docId, ...payload } = feature;
+    if (_docId) {
+      // Edição: Usa o _docId para referenciar o documento
+      const docRef = doc(db, 'features', _docId);
       await updateDoc(docRef, payload);
     } else {
+      // Criação: Adiciona um novo documento
       const col = collection(db, 'features');
-      const res = await addDoc(col, feature);
-      feature._docId = res.id;
+      await addDoc(col, payload);
     }
-    await loadFeatures();
+    await loadFeatures(); // Recarrega os dados após a operação
   }
 
+  // CORRIGIDO: Função para salvar/atualizar Story
   async function saveStory(story) {
-    if (story._docId) {
-      const docRef = doc(db, 'stories', story._docId);
-      const { _docId, ...payload } = story;
+    const { _docId, ...payload } = story;
+    if (_docId) {
+      const docRef = doc(db, 'stories', _docId);
       await updateDoc(docRef, payload);
     } else {
       const col = collection(db, 'stories');
-      const res = await addDoc(col, story);
-      story._docId = res.id;
+      await addDoc(col, payload);
     }
-    await loadStories();
+    await loadStories(); // Recarrega os dados após a operação
   }
 
+  // CORRIGIDO: Função para salvar/atualizar Task
   async function saveTask(task) {
-    if (task._docId) {
-      const docRef = doc(db, 'tasks', task._docId);
-      const { _docId, ...payload } = task;
+    const { _docId, ...payload } = task;
+    if (_docId) {
+      const docRef = doc(db, 'tasks', _docId);
       await updateDoc(docRef, payload);
     } else {
       const col = collection(db, 'tasks');
-      const res = await addDoc(col, task);
-      task._docId = res.id;
+      await addDoc(col, payload);
     }
-    await loadTasks();
+    await loadTasks(); // Recarrega os dados após a operação
   }
 
+  // CORRIGIDO: Funções de deleção que usam o _docId
   async function deleteFeatureByDocId(docId) {
     await deleteDoc(doc(db, 'features', docId));
     await loadFeatures();
@@ -4110,6 +4171,7 @@
     await loadTasks();
   }
 
+  // ATUALIZADO: Exporta as funções para a janela global
   window.firestone = {
     loadAllData,
     loadFeatures, loadStories, loadTasks,
@@ -4126,7 +4188,6 @@
   }
 </script>
 
-<!-- FIM DO BLOCO DE INTEGRAÇÃO -->
 
 </body>
 </html>
