@@ -1058,7 +1058,10 @@
     }
 
     function saveFeatures() {
-        localStorage.setItem('scrumFeatures', JSON.stringify(features));
+    if (!window.firestone) return;
+    features.forEach(f => {
+        window.firestone.saveFeature(f);
+    });
     }
 
     function saveStories() {
@@ -3999,13 +4002,11 @@
 </script>
 
 <script type="module">
-  // Firestore integration (REPLACES old firebase block). Only Firestore (no Analytics).
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
   import {
-    getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, where
+    getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc
   } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
-  // --- Firebase config (copiado do seu arquivo original) ---
   const firebaseConfig = {
     apiKey: "AIzaSyDU3nmuB6kOiVAxuqTdpzOUjtzhVtj1sBg",
     authDomain: "managerscrum-dc813.firebaseapp.com",
@@ -4016,150 +4017,99 @@
     measurementId: "G-NM19SWTFHG"
   };
 
-  // Initialize Firebase app + Firestore
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // Expose Firestore objects for debugging if needed
   window._fs = { db };
 
-  // Ensure global arrays exist (the original app expects these globals)
   window.features = window.features || [];
   window.stories = window.stories || [];
   window.tasks = window.tasks || [];
 
-  // Utility: normalize Firestore doc to local object
   function docToObj(docSnap) {
     const data = docSnap.data();
-    const out = { _docId: docSnap.id, ...data };
-    return out;
+    return { _docId: docSnap.id, ...data };
   }
 
-  // --- Loaders ---
   async function loadFeatures() {
-    try {
-      const snap = await getDocs(collection(db, 'features'));
-      window.features = snap.docs.map(docToObj);
-      if (typeof renderFeatures === "function") renderFeatures();
-    } catch (err) {
-      console.error("Erro ao carregar features:", err);
-    }
+    const snap = await getDocs(collection(db, 'features'));
+    window.features = snap.docs.map(docToObj);
+    if (typeof renderFeatures === "function") renderFeatures();
   }
 
   async function loadStories() {
-    try {
-      const snap = await getDocs(collection(db, 'stories'));
-      window.stories = snap.docs.map(docToObj);
-      if (typeof renderStories === "function") renderStories();
-    } catch (err) {
-      console.error("Erro ao carregar stories:", err);
-    }
+    const snap = await getDocs(collection(db, 'stories'));
+    window.stories = snap.docs.map(docToObj);
+    if (typeof renderStories === "function") renderStories();
   }
 
   async function loadTasks() {
-    try {
-      const snap = await getDocs(collection(db, 'tasks'));
-      window.tasks = snap.docs.map(docToObj);
-      // If modal is open or UI expects tasks, re-render
-      if (typeof renderTasksInModal === "function") renderTasksInModal(window._lastTaskModalStoryId || null);
-    } catch (err) {
-      console.error("Erro ao carregar tasks:", err);
+    const snap = await getDocs(collection(db, 'tasks'));
+    window.tasks = snap.docs.map(docToObj);
+    if (typeof renderTasksInModal === "function") {
+      renderTasksInModal(window._lastTaskModalStoryId || null);
     }
   }
 
   async function loadAllData() {
     await Promise.all([loadFeatures(), loadStories(), loadTasks()]);
-    // Optional: update dashboard if exists
     if (typeof updateDashboard === "function") updateDashboard();
   }
 
-  // --- Save / Update helpers ---
   async function saveFeature(feature) {
-    try {
-      if (feature._docId) {
-        const docRef = doc(db, 'features', feature._docId);
-        const { _docId, ...payload } = feature;
-        await updateDoc(docRef, payload);
-      } else {
-        const col = collection(db, 'features');
-        const res = await addDoc(col, feature);
-        feature._docId = res.id;
-      }
-      await loadFeatures();
-    } catch (err) {
-      console.error("Erro ao salvar feature:", err);
-      throw err;
+    if (feature._docId) {
+      const docRef = doc(db, 'features', feature._docId);
+      const { _docId, ...payload } = feature;
+      await updateDoc(docRef, payload);
+    } else {
+      const col = collection(db, 'features');
+      const res = await addDoc(col, feature);
+      feature._docId = res.id;
     }
+    await loadFeatures();
   }
 
   async function saveStory(story) {
-    try {
-      if (story._docId) {
-        const docRef = doc(db, 'stories', story._docId);
-        const { _docId, ...payload } = story;
-        await updateDoc(docRef, payload);
-      } else {
-        const col = collection(db, 'stories');
-        const res = await addDoc(col, story);
-        story._docId = res.id;
-      }
-      await loadStories();
-    } catch (err) {
-      console.error("Erro ao salvar story:", err);
-      throw err;
+    if (story._docId) {
+      const docRef = doc(db, 'stories', story._docId);
+      const { _docId, ...payload } = story;
+      await updateDoc(docRef, payload);
+    } else {
+      const col = collection(db, 'stories');
+      const res = await addDoc(col, story);
+      story._docId = res.id;
     }
+    await loadStories();
   }
 
   async function saveTask(task) {
-    try {
-      if (task._docId) {
-        const docRef = doc(db, 'tasks', task._docId);
-        const { _docId, ...payload } = task;
-        await updateDoc(docRef, payload);
-      } else {
-        const col = collection(db, 'tasks');
-        const res = await addDoc(col, task);
-        task._docId = res.id;
-      }
-      await loadTasks();
-    } catch (err) {
-      console.error("Erro ao salvar task:", err);
-      throw err;
+    if (task._docId) {
+      const docRef = doc(db, 'tasks', task._docId);
+      const { _docId, ...payload } = task;
+      await updateDoc(docRef, payload);
+    } else {
+      const col = collection(db, 'tasks');
+      const res = await addDoc(col, task);
+      task._docId = res.id;
     }
+    await loadTasks();
   }
 
-  // --- Deletions ---
   async function deleteFeatureByDocId(docId) {
-    try {
-      await deleteDoc(doc(db, 'features', docId));
-      await loadFeatures();
-    } catch (err) {
-      console.error("Erro ao deletar feature:", err);
-      throw err;
-    }
+    await deleteDoc(doc(db, 'features', docId));
+    await loadFeatures();
   }
 
   async function deleteStoryByDocId(docId) {
-    try {
-      await deleteDoc(doc(db, 'stories', docId));
-      await loadStories();
-    } catch (err) {
-      console.error("Erro ao deletar story:", err);
-      throw err;
-    }
+    await deleteDoc(doc(db, 'stories', docId));
+    await loadStories();
   }
 
   async function deleteTaskByDocId(docId) {
-    try {
-      await deleteDoc(doc(db, 'tasks', docId));
-      await loadTasks();
-    } catch (err) {
-      console.error("Erro ao deletar task:", err);
-      throw err;
-    }
+    await deleteDoc(doc(db, 'tasks', docId));
+    await loadTasks();
   }
 
-  // Expose API to global scope so the existing application can call these
   window.firestone = {
     loadAllData,
     loadFeatures, loadStories, loadTasks,
@@ -4167,19 +4117,12 @@
     deleteFeatureByDocId, deleteStoryByDocId, deleteTaskByDocId
   };
 
-  // Compatibility helpers: map local ID -> _docId
-  // If your UI uses numeric `id` fields to link objects, keep them in the Firestore documents
-  // Example: { id: 123, externalId: 'FEAT-1', title: 'X' } — then doc.data().id === 123
-
-  // If you want live updates instead of manual reloads, we can switch these to onSnapshot listeners.
-
-  // Load all data at startup
-  // If the page already sets window.onload listeners, we call loadAllData() deferred to not interfere
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    // small timeout to ensure original scripts have defined render functions
     setTimeout(() => { loadAllData(); }, 300);
   } else {
-    window.addEventListener('DOMContentLoaded', () => { setTimeout(() => { loadAllData(); }, 300); });
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => { loadAllData(); }, 300);
+    });
   }
 </script>
 
