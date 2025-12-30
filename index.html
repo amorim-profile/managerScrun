@@ -262,7 +262,7 @@
                         <table class="min-w-full divide-y divide-gray-200 dense-table">
                             <thead class="bg-gray-100">
                                 <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">ID EXT.</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">ID EXT..</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Título</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Área / PO</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Status</th>
@@ -769,12 +769,10 @@
     // === END MOBILE MENU CONTROL ===
 
     // === DATA AND CONFIGURATION VARIABLES ===
-    // ATUALIZADO: Estas variáveis agora serão preenchidas pelas funções de load do Firebase.
-    // Manter a definição inicial como arrays vazios é bom para o caso do Firebase falhar.
-    // O bloco de script type="module" injetará os dados reais.
-    let features = [];
-    let stories = [];
-    let tasks = [];
+    // ATUALIZADO: Usando var para garantir que fiquem anexadas ao objeto window
+    var features = [];
+    var stories = [];
+    var tasks = [];
     
     // Variável de controle para o Firebase (inicialmente vazia, preenchida pelo bloco type="module")
     window.firestone = window.firestone || null;
@@ -861,7 +859,6 @@
         'Proposto': 'bg-gray-300 text-gray-800',
         'Aprovado': 'bg-blue-400 text-white',
         'Em Andamento': 'bg-yellow-400 text-white',
-        // CORREÇÃO DE SINTAXE: Linha anterior estava incompleta, resultando em "unexpected token"
         'Concluído': 'bg-green-500 text-white', /* Cores unificadas */
     };
 
@@ -908,8 +905,6 @@
     
     function loadData() {
         try {
-            // REMOVIDO: Carregamento de features, stories e tasks (será feito pelo Firebase no <script type="module">)
-            
             const storedConfigs = localStorage.getItem('scrumConfigs');
             if (storedConfigs) {
                 // Merge default settings with saved ones, ensuring new categories are not lost.
@@ -926,52 +921,41 @@
                      configs.statusStory = loadedConfigs.status;
                      configs.statusTask = loadedConfigs.status;
                 }
-                // Fim da lógica de migração de status
                 
                 // NOVO: Carrega Feature Configs
                 configs.directorate = loadedConfigs.directorate || configs.directorate;
                 configs.statusFeature = loadedConfigs.statusFeature || configs.statusFeature;
-                // FIM NOVO
                 
                 configs.system = loadedConfigs.system || configs.system; 
                 configs.techlead = loadedConfigs.techlead || configs.techlead; 
             }
         } catch (e) {
             console.error("Error loading data from localStorage:", e);
-            // In case of error, use the default data defined above
         }
     }
 
-    // CORRIGIDO: Agora usa a função do Firebase (firestone.saveFeature) se disponível
     async function saveFeatures() {
         if (window.firestone) {
-            // Recarregamos todas as features após cada save/update no Firebase
-            // Para manter a coerência, a lógica de save individual foi movida para o onsubmit
             return; 
         }
         localStorage.setItem('scrumFeatures', JSON.stringify(features));
     }
 
-    // CORRIGIDO: Agora usa a função do Firebase (firestone.saveStory) se disponível
     async function saveStories() {
         if (window.firestone) {
-            // Recarregamos todas as stories após cada save/update no Firebase
             return; 
         }
         localStorage.setItem('scrumStories', JSON.stringify(stories));
     }
     
-    // CORRIGIDO: Agora usa a função do Firebase (firestone.saveTask) se disponível
     async function saveTasks() {
         if (window.firestone) {
-            // Recarregamos todas as tasks após cada save/update no Firebase
             return; 
         }
         localStorage.setItem('scrumTasks', JSON.stringify(tasks));
     }
 
     function saveConfigs() {
-        // Remove a chave 'status' para evitar confusão se ela for resgatada de uma versão anterior
         const configsToSave = { ...configs };
         delete configsToSave.status;
         localStorage.setItem('scrumConfigs', JSON.stringify(configsToSave));
@@ -990,10 +974,8 @@
         document.getElementById('message-modal').classList.add('hidden');
     }
     
-    // Funções para o Task Modal (CRIAÇÃO/EDIÇÃO)
     function openTaskModal(storyId, storyTitle, task = null) {
         const taskIdElement = document.getElementById('task-id');
-        // NOVO: ID do documento Firebase
         const taskDocIdElement = document.getElementById('task-doc-id');
         const storyIdElement = document.getElementById('task-story-id');
         const titleElement = document.getElementById('task-modal-title');
@@ -1007,9 +989,8 @@
         storyIdElement.value = storyId;
 
         if (task) {
-            // Modo Edição
             taskIdElement.value = task.id;
-            taskDocIdElement.value = task._docId || ''; // NOVO: Seta o _docId
+            taskDocIdElement.value = task._docId || ''; 
             titleElement.textContent = `Editar Tarefa: ${task.title}`;
             submitBtn.textContent = 'Atualizar Task';
             
@@ -1022,9 +1003,8 @@
             document.getElementById('task-status').value = task.status;
             
         } else {
-            // Modo Criação
-            taskIdElement.value = generateId(); // Gera um ID local para a lista se necessário
-            taskDocIdElement.value = ''; // ID do documento vazio para criação
+            taskIdElement.value = generateId(); 
+            taskDocIdElement.value = ''; 
             titleElement.textContent = `Inserir Nova Tarefa para História: ${storyTitle}`;
             submitBtn.textContent = 'Salvar Task';
             gmudIdElement.value = ''; 
@@ -1038,26 +1018,19 @@
         document.getElementById('task-modal').classList.add('hidden');
     }
     
-    // Função para editar uma Task (chamada da tabela)
     function editTask(taskId) {
         const task = tasks.find(t => t.id === taskId);
         if (!task) {
             showModal("Erro", "Task não encontrada.", `<button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">OK</button>`);
             return;
         }
-        // Obtém o título da história para exibir no modal de edição
         const story = stories.find(s => s.id === task.storyId);
-        // Limpa a seleção de tarefas ao abrir a edição individual (para evitar confusão)
         selectedTaskIds.clear();
         updateTaskActionControls();
-        
-        // Garante que o modal de lista de tasks esteja fechado se a edição for iniciada de outro lugar
         closeStoryTasksModal(); 
-        
         openTaskModal(task.storyId, story ? story.title : 'Edição', task);
     }
     
-    // Função para deletar uma Task (chamada da tabela)
     function confirmDeleteTask(taskId, taskTitle) {
          showModal(
             "Confirmar Exclusão de Task",
@@ -1069,29 +1042,25 @@
         );
     }
     
-    // CORRIGIDO: Usa o _docId para exclusão no Firebase
     async function deleteTask(taskId) {
         const taskToDelete = tasks.find(t => t.id === taskId);
         if (!taskToDelete || !taskToDelete._docId || !window.firestone) {
-             // Caso não tenha _docId (dados de mock) ou Firebase não esteja pronto
              tasks = tasks.filter(t => t.id !== taskId);
              saveTasks();
-             console.warn("Deletando task localmente (sem _docId ou firestone indisponível).");
+             console.warn("Deletando task localmente.");
         } else {
              await window.firestone.deleteTaskByDocId(taskToDelete._docId);
         }
         
-        const storyId = taskToDelete.storyId; // Obtém o storyId antes de remover
+        const storyId = taskToDelete.storyId; 
         
         if (storyId) {
-            // Se o modal de Tasks estiver aberto, atualiza-o
             if (!document.getElementById('task-list-modal').classList.contains('hidden')) {
                  renderTasksInModal(storyId);
             }
-            renderStories(); // Atualiza a tabela principal com o novo status de conclusão
+            renderStories(); 
         }
     }
-    // FIM Funções para o Task Modal
 
     function confirmDeleteStory(id) {
         const story = stories.find(s => s.id === id);
@@ -1116,7 +1085,6 @@
         );
     }
     
-    // NOVO: Confirmação de Exclusão para Múltiplas Seleções (Features)
     function confirmDeleteSelectedFeatures() {
         const count = selectedFeatureIds.size;
          showModal(
@@ -1140,7 +1108,6 @@
         );
     }
     
-    // Confirmação de Exclusão para Múltiplas Seleções (Histórias)
     function confirmDeleteSelected() {
         const count = selectedStoryIds.size;
          showModal(
@@ -1153,7 +1120,6 @@
         );
     }
     
-    // NOVO: Confirmação de Exclusão para Múltiplas Seleções (Tarefas)
     function confirmDeleteSelectedTasks() {
         const count = selectedTaskIds.size;
          showModal(
@@ -1166,27 +1132,19 @@
         );
     }
 
-
     // === NAVIGATION AND VIEW FUNCTIONS ===
     
-    // NOVO HELPER: Fecha todos os submenus e reseta os estilos dos pais
     function closeAllSubmenus() {
-        // 1. Fecha todos os submenus
         document.getElementById('submenu-registrar')?.classList.add('hidden');
         document.getElementById('submenu-config-parent')?.classList.add('hidden');
-        
-        // 2. Reseta todas as setas
         document.getElementById('arrow-registrar')?.classList.remove('rotate-180');
         document.getElementById('arrow-config-parent')?.classList.remove('rotate-180');
-        
-        // 3. Reseta o destaque dos botões pai (garante que não fiquem com fundo escuro permanente)
         document.getElementById('nav-registrar')?.classList.remove('bg-gray-800', 'text-white', 'font-bold');
         document.getElementById('nav-registrar')?.classList.add('text-gray-300', 'hover:bg-gray-800');
         document.getElementById('nav-config-parent')?.classList.remove('bg-indigo-600', 'text-white', 'font-semibold', 'bg-gray-800', 'font-bold');
         document.getElementById('nav-config-parent')?.classList.add('text-gray-300', 'hover:bg-gray-800');
     }
     
-    // Função para abrir/fechar o submenu ('Registrar' ou 'config-parent')
     function toggleSubmenu(parentId) {
         const submenuElement = document.getElementById(`submenu-${parentId}`);
         const arrowElement = document.getElementById(`arrow-${parentId}`);
@@ -1195,54 +1153,40 @@
         if (!submenuElement || !arrowElement || !parentBtn) return;
 
         const isCurrentlyOpen = !submenuElement.classList.contains('hidden');
-
-        // 1. Fecha todos os outros submenus e reseta todos os pais
         closeAllSubmenus();
         
         if (!isCurrentlyOpen) {
-            // Se estava fechado, abre o submenu clicado e destaca o pai
             submenuElement.classList.remove('hidden');
             parentBtn.classList.remove('text-gray-300', 'hover:bg-gray-800');
             parentBtn.classList.add('bg-gray-800', 'text-white', 'font-bold');
-            
-            // Só gira a seta se a tela for desktop
             if (window.innerWidth >= 768) {
                 arrowElement.classList.add('rotate-180');
             }
         }
     }
     
-    // Função global para re-renderizar todas as views que dependem de dados
     function updateAllViews() {
         renderFeatures();
         renderStories();
         renderDashboard();
     }
 
-
     function showView(viewId) {
-        // Hide all views
         document.querySelectorAll('.view').forEach(view => {
             view.classList.add('hidden');
         });
-        // Show the requested view
         const viewElement = document.getElementById(`${viewId}-view`);
         if (viewElement) {
             viewElement.classList.remove('hidden');
         }
         
-        // --- Update navigation state ---
-
-        // 1. Reset all navigation states first
         closeAllSubmenus(); 
 
-        // 1.1 Reset styles for all buttons (including submenus)
         document.querySelectorAll('.nav-btn, .submenu-btn').forEach(btn => {
             btn.classList.remove('bg-indigo-600', 'text-white', 'font-semibold', 'bg-gray-800', 'font-bold', 'text-indigo-400');
             btn.classList.add('text-gray-300', 'hover:bg-gray-800');
         });
 
-        // 2. Highlight the active button & manage parent menu
         const activeBtn = document.getElementById(`nav-${viewId}`);
         if(activeBtn) {
             let parentId = '';
@@ -1259,7 +1203,6 @@
             }
             
             if (parentId) {
-                // Destaca o botão pai como ativo (dark background) e o abre
                 const parentBtn = document.getElementById(`nav-${parentId}`);
                 const submenuElement = document.getElementById(`submenu-${parentId}`);
                 const arrowElement = document.getElementById(`arrow-${parentId}`);
@@ -1274,20 +1217,16 @@
                         arrowElement?.classList.add('rotate-180');
                     }
                 }
-
-                // Destaca o item do submenu ativo
                 activeBtn.classList.remove('text-gray-300', 'hover:bg-gray-800');
                 activeBtn.classList.add('text-indigo-400', 'font-bold');
             }
         }
         
-        // 3. Trigger view rendering
         currentView = viewId;
         switch (viewId) {
             case 'stories':
-                destroyCharts(); // Destroy charts when leaving the dashboard
+                destroyCharts(); 
                 populateSelects();
-                // Garante que o select de feature na história seja populado
                 populateStoryFeatureSelect();
                 selectedStoryIds.clear(); 
                 updateActionControls();
@@ -1296,9 +1235,9 @@
                 break;
             case 'feature':
                 destroyCharts(); 
-                populateFeatureSelects(); // Novo
-                renderFeatures();        // Novo
-                closeFeatureForm();      // Novo
+                populateFeatureSelects(); 
+                renderFeatures();        
+                closeFeatureForm();      
                 break;
             case 'configs':
                 destroyCharts(); 
@@ -1306,7 +1245,6 @@
                 break;
             case 'integration':
                 destroyCharts(); 
-                // A view de integração não requer lógica de renderização, é estática.
                 break;
             case 'dashboard':
                 renderDashboard(); 
@@ -1314,13 +1252,12 @@
         }
     }
     
-    // NOVO: Função para ocultar/exibir os elementos da lista de Features
     function toggleFeatureListVisibility(shouldHide) {
         const elementsToToggle = [
-            document.getElementById('feature-list-header'), // O cabeçalho com o botão "Nova Feature"
-            document.getElementById('feature-filters-container'), // O container de filtros
-            document.getElementById('feature-table-action-controls'), // Os controles de ação da tabela
-            document.getElementById('feature-table-wrapper') // O wrapper da tabela
+            document.getElementById('feature-list-header'),
+            document.getElementById('feature-filters-container'),
+            document.getElementById('feature-table-action-controls'),
+            document.getElementById('feature-table-wrapper')
         ];
 
         elementsToToggle.forEach(el => {
@@ -1328,17 +1265,14 @@
                 if (shouldHide) {
                     el.classList.add('hidden');
                 } else {
-                    // Apenas exibe se houver dados (rely on renderFeatures to check data length)
                     el.classList.remove('hidden'); 
                 }
             }
         });
     }
 
+    // === FEATURE MANAGEMENT FUNCTIONS ===
 
-    // === FEATURE MANAGEMENT FUNCTIONS (CRUD e Visualização) ===
-
-    // Função para preencher os selects do formulário e filtros de Feature
     function populateFeatureSelects() {
         const selects = {
             'feature-directorate': 'directorate',
@@ -1372,25 +1306,20 @@
         }
     }
 
-    // Função para preencher o select de Feature na História
     function populateStoryFeatureSelect() {
         const selectElement = document.getElementById('story-feature-id');
         if (!selectElement) return;
 
-        // Salva a seleção atual para restaurar após o preenchimento
         const currentFeatureId = selectElement.value;
-        
         selectElement.innerHTML = `<option value="">-- Nenhuma Feature Associada --</option>`;
 
         features.forEach(feature => {
             const option = document.createElement('option');
             option.value = feature.id;
-            // Exibe o ID Externo e Título
             option.textContent = `${feature.externalId || feature.id} - ${feature.title}`;
             selectElement.appendChild(option);
         });
         
-        // Restaura a seleção, se ainda for válida
         if (currentFeatureId && selectElement.querySelector(`option[value="${currentFeatureId}"]`)) {
              selectElement.value = currentFeatureId;
         } else {
@@ -1398,40 +1327,23 @@
         }
     }
 
-    // Função para calcular o progresso das histórias de uma Feature
     function getFeatureStoryProgress(featureId) {
         const featureStories = stories.filter(s => s.featureId === featureId);
         const totalStories = featureStories.length;
-        
         const doneStatusConfig = configs.statusStory.find(s => s.name.toLowerCase() === STATUS_CONCLUIDO_NAME.toLowerCase());
         const doneStatusName = doneStatusConfig ? doneStatusConfig.name : STATUS_CONCLUIDO_NAME;
-
         const storiesDone = featureStories.filter(s => s.status.toLowerCase() === doneStatusName.toLowerCase()).length;
-        
         let percentage = 0;
-        if (totalStories > 0) {
-            percentage = Math.round((storiesDone / totalStories) * 100);
-        }
-        
-        return {
-            total: totalStories,
-            done: storiesDone,
-            percentage: percentage
-        };
+        if (totalStories > 0) percentage = Math.round((storiesDone / totalStories) * 100);
+        return { total: totalStories, done: storiesDone, percentage: percentage };
     }
     
-    // NOVO: Adiciona/Remove o ID da feature do set de seleção
     function toggleFeatureSelection(id, isChecked) {
         const featureId = parseInt(id);
-        if (isChecked) {
-            selectedFeatureIds.add(featureId);
-        } else {
-            selectedFeatureIds.delete(featureId);
-        }
+        if (isChecked) { selectedFeatureIds.add(featureId); } else { selectedFeatureIds.delete(featureId); }
         updateFeatureActionControls();
     }
 
-    // NOVO: Seleciona/Desseleciona todas as features visíveis
     function toggleSelectAllFeatures(isChecked) {
         const checkboxes = document.querySelectorAll('#features-table-body input[type="checkbox"]');
         checkboxes.forEach(checkbox => {
@@ -1439,121 +1351,60 @@
             const id = checkbox.getAttribute('data-id');
             toggleFeatureSelection(id, isChecked);
         });
-        // Garante que o checkbox oposto (cabeçalho/controle) também seja atualizado
         document.getElementById('header-select-all-features').checked = isChecked;
         document.getElementById('select-all-features').checked = isChecked;
         updateFeatureActionControls();
     }
 
-    // NOVO: Atualiza os botões de ação e a mensagem de contagem (Features)
     function updateFeatureActionControls() {
         const count = selectedFeatureIds.size;
-        
-        // Atualiza a mensagem de contagem
         const countMessage = document.getElementById('selected-feature-count-message');
-        if (countMessage) {
-            countMessage.textContent = `${count} ${count === 1 ? 'item selecionado' : 'itens selecionados'}`;
-        }
-
-        // Habilita/Desabilita botão de Editar
+        if (countMessage) { countMessage.textContent = `${count} ${count === 1 ? 'item selecionado' : 'itens selecionados'}`; }
         const editBtn = document.getElementById('edit-selected-feature-btn');
-        if (editBtn) {
-            editBtn.disabled = count !== 1; // Habilita SÓ se 1 item for selecionado
-        }
-
-        // Habilita/Desabilita botão de Excluir
+        if (editBtn) { editBtn.disabled = count !== 1; }
         const deleteBtn = document.getElementById('delete-selected-feature-btn');
-        if (deleteBtn) {
-            deleteBtn.disabled = count === 0; // Habilita se 1 ou mais itens forem selecionados
-        }
-        
-        // Atualiza o checkbox de 'selecionar todos' (em ambos os locais)
+        if (deleteBtn) { deleteBtn.disabled = count === 0; }
         const visibleCheckboxes = document.querySelectorAll('#features-table-body input[type="checkbox"]');
         const isAllSelected = visibleCheckboxes.length > 0 && count === visibleCheckboxes.length;
         const isPartial = count > 0 && !isAllSelected;
-
         ['header-select-all-features', 'select-all-features'].forEach(id => {
             const checkbox = document.getElementById(id);
-            if (checkbox) {
-                checkbox.checked = isAllSelected;
-                checkbox.indeterminate = isPartial;
-            }
+            if (checkbox) { checkbox.checked = isAllSelected; checkbox.indeterminate = isPartial; }
         });
-
-        // Mostra/Esconde o container de controles
         const controlsContainer = document.getElementById('feature-table-action-controls');
         if (controlsContainer) {
-            // CONTROLE FOI MOVIDO PARA A FUNÇÃO toggleFeatureListVisibility()
-            // Apenas garante que, se for para esconder, ele esconda (que deve ser o caso se não houver itens visíveis)
-            if (filteredFeatures.length === 0 && count === 0) {
-                controlsContainer.classList.add('hidden');
-            } else if (filteredFeatures.length > 0 && document.getElementById('feature-form-container').classList.contains('hidden')) {
-                // Só mostra se houver itens e o formulário NÃO estiver aberto
-                controlsContainer.classList.remove('hidden');
-            } else {
-                 controlsContainer.classList.add('hidden');
-            }
+            if (filteredFeatures.length === 0 && count === 0) { controlsContainer.classList.add('hidden'); }
+            else if (filteredFeatures.length > 0 && document.getElementById('feature-form-container').classList.contains('hidden')) { controlsContainer.classList.remove('hidden'); }
+            else { controlsContainer.classList.add('hidden'); }
         }
     }
     
-    // NOVO: Edita a feature selecionada (funciona apenas quando 1 item está selecionado)
     function editSelectedFeature() {
         if (selectedFeatureIds.size !== 1) return;
-
         const id = selectedFeatureIds.values().next().value;
         const feature = features.find(f => f.id === id);
-        
-        if (feature) {
-            // Limpa a seleção e abre o formulário
-            selectedFeatureIds.clear();
-            updateFeatureActionControls();
-            openFeatureForm(feature);
-        }
+        if (feature) { selectedFeatureIds.clear(); updateFeatureActionControls(); openFeatureForm(feature); }
     }
     
-    // CORRIGIDO: Exclui as features selecionadas usando Firebase
     async function deleteSelectedFeatures() {
         const idsToDelete = Array.from(selectedFeatureIds);
-        
         if (window.firestone) {
-            // 1. Deleção no Firebase
             for (const id of idsToDelete) {
                 const feature = features.find(f => f.id === id);
                 if (feature && feature._docId) {
                     await window.firestone.deleteFeatureByDocId(feature._docId);
-                    
-                    // Remove a associação de histórias *após* a exclusão da feature (Firebase recarrega features)
-                    stories.forEach(story => {
-                        if (story.featureId === id) {
-                            story.featureId = ''; // O ideal é fazer um update para cada história
-                            // Se estivermos em um ambiente de produção real, teríamos que fazer o update da story aqui.
-                            // Mas, como loadFeatures() recarrega features e renderiza, apenas removemos o localmente.
-                        }
-                    });
+                    stories.forEach(story => { if (story.featureId === id) story.featureId = ''; });
                 }
             }
-            // O loadFeatures dentro da função de delete do firestone já recarrega e chama renderFeatures
         } else {
-             // Modo local/mock
              features = features.filter(feature => !selectedFeatureIds.has(feature.id));
-             stories.forEach(story => {
-                if (idsToDelete.includes(story.featureId)) {
-                    story.featureId = '';
-                }
-            });
-            saveFeatures();
-            saveStories();
-            renderFeatures();
+             stories.forEach(story => { if (idsToDelete.includes(story.featureId)) story.featureId = ''; });
+            saveFeatures(); saveStories(); renderFeatures();
         }
-        
-        selectedFeatureIds.clear();
-        renderStories(); 
-        populateStoryFeatureSelect(); 
+        selectedFeatureIds.clear(); renderStories(); populateStoryFeatureSelect(); 
     }
     
-    // Variável global para armazenar features filtradas temporariamente
-    let filteredFeatures = [];
-
+    var filteredFeatures = [];
 
     function renderFeatures() {
         const tableBody = document.getElementById('features-table-body');
@@ -1564,16 +1415,9 @@
 
         if (!tableBody || !noFeaturesMessage || !tableWrapper || !filterContainer || !header) return;
 
-        // Oculta tudo por padrão (a menos que o formulário esteja aberto, o que é tratado em openFeatureForm)
-        if (document.getElementById('feature-form-container').classList.contains('hidden')) {
-            toggleFeatureListVisibility(false);
-        } else {
-            toggleFeatureListVisibility(true);
-        }
+        if (document.getElementById('feature-form-container').classList.contains('hidden')) { toggleFeatureListVisibility(false); } else { toggleFeatureListVisibility(true); }
         
         tableBody.innerHTML = '';
-
-        // Apply filters
         const filterDirectorate = document.getElementById('filter-feature-directorate').value;
         const filterPo = document.getElementById('filter-feature-po').value;
         const filterStatus = document.getElementById('filter-feature-status').value;
@@ -1585,13 +1429,10 @@
             return passesDirectorate && passesPo && passesStatus;
         });
         
-        // Limpa o estado de seleção ao renderizar a nova lista
         selectedFeatureIds.clear();
-
 
         if (filteredFeatures.length === 0) {
             noFeaturesMessage.classList.remove('hidden');
-            // Se não houver features, esconde os controles de ação (mesmo que o filtro esteja fechado)
             document.getElementById('feature-table-action-controls')?.classList.add('hidden');
             tableWrapper.classList.add('hidden');
             return;
@@ -1602,19 +1443,11 @@
 
         filteredFeatures.forEach(feature => {
             const row = document.createElement('tr');
-            // Verifica se a feature está selecionada para manter o checkbox marcado
             const isSelected = selectedFeatureIds.has(feature.id);
             row.className = `hover:bg-gray-50 transition duration-100 ${isSelected ? 'bg-purple-50/50' : ''}`;
-
-
-            // Cálculo do progresso das histórias
             const progress = getFeatureStoryProgress(feature.id);
             const progressText = `${progress.done}/${progress.total}`;
-            
-            // Estilização do status
             const statusColorClass = statusColors[feature.status] || 'bg-gray-100 text-gray-800';
-
-            // Barra de progresso visual (cor principal alterada para roxo para refletir Feature)
             const progressBar = `
                 <button onclick="openFeatureStoriesModal(${feature.id})"
                     class="flex items-center space-x-2 w-full p-1 -m-1 rounded-md hover:bg-purple-50 transition duration-150">
@@ -1648,8 +1481,6 @@
             `;
             tableBody.appendChild(row);
         });
-        
-        // Atualiza o estado dos controles de ação após renderizar a lista filtrada
         updateFeatureActionControls();
     }
     
@@ -1660,33 +1491,23 @@
         renderFeatures();
     }
 
-    /**
-     * Opens the form for new feature or editing.
-     * @param {object | null} feature The feature object to edit, or null for creation.
-     * @param {boolean} isFromStoryCreation If true, only opens the form to show the ID, no other actions.
-     */
     function openFeatureForm(feature = null, isFromStoryCreation = false) {
         const formContainer = document.getElementById('feature-form-container');
-        const featureStoriesContainer = document.getElementById('feature-stories-container'); // NOVO CONTAINER
+        const featureStoriesContainer = document.getElementById('feature-stories-container');
         const formTitle = document.getElementById('feature-form-title');
         const featureIdInput = document.getElementById('feature-id');
-        const featureDocIdInput = document.getElementById('feature-doc-id'); // NOVO
+        const featureDocIdInput = document.getElementById('feature-doc-id');
         const submitBtn = document.getElementById('feature-form-submit');
         const insertStoryBtn = document.getElementById('insert-story-btn');
         
-        // APLICAÇÃO DA REGRA: Oculta a lista, filtros e controles de ação
         toggleFeatureListVisibility(true); 
-        
-        // Oculta a lista de histórias associadas por padrão
         featureStoriesContainer?.classList.add('hidden');
-        
-        // Re-popula os selects do formulário (que usa as mesmas configs de filtro)
         populateFeatureSelects();
 
         if (feature) {
             formTitle.textContent = "Editar Feature";
             featureIdInput.value = feature.id;
-            featureDocIdInput.value = feature._docId || ''; // NOVO: Seta o _docId
+            featureDocIdInput.value = feature._docId || ''; 
             document.getElementById('feature-external-id').value = feature.externalId || '';
             document.getElementById('feature-title').value = feature.title;
             document.getElementById('feature-description').value = feature.description || '';
@@ -1694,77 +1515,39 @@
             document.getElementById('feature-po').value = feature.po;
             document.getElementById('feature-status').value = feature.status;
             submitBtn.textContent = "Atualizar Feature";
-            
-            // Habilita o botão Inserir História na Edição
             insertStoryBtn.classList.remove('opacity-50', 'cursor-not-allowed');
             insertStoryBtn.removeAttribute('disabled');
-            
-            // Renderiza a tabela de histórias associadas e a exibe
-            if (featureStoriesContainer) {
-                renderStoriesForFeature(feature.id);
-                featureStoriesContainer.classList.remove('hidden');
-            }
-
-
+            if (featureStoriesContainer) { renderStoriesForFeature(feature.id); featureStoriesContainer.classList.remove('hidden'); }
         } else {
             formTitle.textContent = "Nova Feature";
-            featureIdInput.value = generateId(); // Gera um ID local para a lista se necessário
-            featureDocIdInput.value = ''; // ID do documento vazio para criação
+            featureIdInput.value = generateId(); 
+            featureDocIdInput.value = ''; 
             document.getElementById('feature-form').reset();
             submitBtn.textContent = "Salvar Feature";
-
-            // Desabilita o botão Inserir História na Criação
             insertStoryBtn.classList.add('opacity-50', 'cursor-not-allowed');
             insertStoryBtn.setAttribute('disabled', 'true');
         }
-        
-        // Exibe o formulário
         formContainer.classList.remove('hidden');
         formContainer.scrollIntoView({ behavior: 'smooth' });
     }
     
-    /**
-     * Renderiza a tabela de Histórias associadas a uma Feature em edição.
-     * É chamada no modo de edição da Feature.
-     * @param {number} featureId O ID da Feature atual.
-     */
     function renderStoriesForFeature(featureId) {
         const tableBody = document.getElementById('feature-stories-table-body');
         const noStoriesMessage = document.getElementById('no-feature-stories-message');
         const titleElement = document.getElementById('feature-stories-title');
-        
         if (!tableBody || !noStoriesMessage || !titleElement) return;
-
         tableBody.innerHTML = '';
-        
         const featureStories = stories.filter(s => s.featureId === featureId);
         const feature = features.find(f => f.id === featureId);
-
-        if (feature) {
-            const progress = getFeatureStoryProgress(featureId);
-            titleElement.textContent = `Histórias Associadas (Feature ${feature.externalId || featureId}: ${progress.done}/${progress.total} Concluídas)`;
-        } else {
-             titleElement.textContent = `Histórias Associadas`;
-        }
-        
-        if (featureStories.length === 0) {
-            noStoriesMessage.classList.remove('hidden');
-            return;
-        } else {
-            noStoriesMessage.classList.add('hidden');
-        }
-
+        if (feature) { const progress = getFeatureStoryProgress(featureId); titleElement.textContent = `Histórias Associadas (Feature ${feature.externalId || featureId}: ${progress.done}/${progress.total} Concluídas)`; }
+        else { titleElement.textContent = `Histórias Associadas`; }
+        if (featureStories.length === 0) { noStoriesMessage.classList.remove('hidden'); return; } else { noStoriesMessage.classList.add('hidden'); }
         featureStories.forEach(story => {
             const row = document.createElement('tr');
             row.className = `hover:bg-gray-50 transition duration-100`;
-
-            // Status da História
             const statusColorClass = statusColors[story.status] || 'bg-gray-100 text-gray-800';
-
-            // Status de Conclusão das Tasks (Progresso)
             const taskStatus = getStoryCompletionStatus(story.id);
             let taskCompletionHtml = '-';
-            
             if (taskStatus.total > 0) {
                 const text = `${taskStatus.done}/${taskStatus.total}`;
                 const percentage = taskStatus.percentage;
@@ -1778,7 +1561,6 @@
                     </div>
                 `;
             }
-
             row.innerHTML = `
                 <td class="px-4 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">${story.externalId || story.id}</td>
                 <td class="px-6 py-4 whitespace-normal text-sm text-gray-800">${story.title}</td>
@@ -1789,7 +1571,6 @@
                     </span>
                 </td>
                 <td class="px-4 py-4 whitespace-nowrap w-48">${taskCompletionHtml}</td>
-                
                 <td class="px-4 py-4 whitespace-nowrap text-center text-sm font-medium">
                     <button onclick="viewStoryInStoriesView(${story.id})" title="Editar História" 
                             class="text-blue-600 hover:text-blue-900 p-1 rounded-full hover:bg-blue-50 transition duration-150">
@@ -1801,39 +1582,25 @@
         });
     }
 
-    /**
-     * NOVO: Abre o modal de visualização de Histórias de uma Feature.
-     * É chamada ao clicar no indicador de progresso da Feature na listagem principal.
-     * @param {number} featureId O ID da Feature para a qual as Histórias devem ser listadas.
-     */
     function openFeatureStoriesModal(featureId) {
         const modal = document.getElementById('feature-story-list-modal');
         const modalTitle = document.getElementById('feature-story-modal-title');
         const tableBody = document.getElementById('feature-story-modal-table-body');
-        
-        tableBody.innerHTML = ''; // Limpa o conteúdo anterior
-        
+        tableBody.innerHTML = ''; 
         const feature = features.find(f => f.id === featureId);
         if (!feature) return;
-
         const featureStories = stories.filter(s => s.featureId === featureId);
         const progress = getFeatureStoryProgress(featureId);
-
         modalTitle.textContent = `Histórias da Feature: ${feature.externalId || featureId} - ${feature.title} (${progress.done}/${progress.total} Concluídas)`;
-        
         if (featureStories.length === 0) {
             tableBody.innerHTML = `<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">Nenhuma história registrada para esta Feature.</td></tr>`;
         } else {
             featureStories.forEach(story => {
                 const row = document.createElement('tr');
                 row.className = `hover:bg-gray-50 transition duration-100`;
-
                 const statusColorClass = statusColors[story.status] || 'bg-gray-100 text-gray-800';
                 const taskStatus = getStoryCompletionStatus(story.id);
-                
-                const taskCompletionHtml = (taskStatus.total > 0) ? 
-                    `${taskStatus.done}/${taskStatus.total} (${taskStatus.percentage}%)` : '-';
-                
+                const taskCompletionHtml = (taskStatus.total > 0) ? `${taskStatus.done}/${taskStatus.total} (${taskStatus.percentage}%)` : '-';
                 row.innerHTML = `
                     <td class="px-4 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">${story.externalId || story.id}</td>
                     <td class="px-6 py-4 whitespace-normal text-sm text-gray-800">${story.title}</td>
@@ -1854,120 +1621,69 @@
                 tableBody.appendChild(row);
             });
         }
-
         modal.classList.remove('hidden');
     }
 
-    /**
-     * Fech a o modal de visualização de Histórias de Feature.
-     */
     function closeFeatureStoriesModal() {
         document.getElementById('feature-story-list-modal').classList.add('hidden');
     }
     
-    /**
-     * Navega para a view de Histórias e abre o formulário para edição de uma História específica.
-     * @param {number} storyId O ID da História a ser editada.
-     */
     function viewStoryInStoriesView(storyId) {
         const storyToEdit = stories.find(s => s.id === storyId);
-
         if (storyToEdit) {
-            // 1. Muda para a view de Histórias
             showView('stories'); 
-            
-            // 2. Abre o formulário de História no modo Edição (já preenchido)
-            // Usamos um timeout zero para garantir que showView termine a transição antes de abrir o formulário.
             setTimeout(() => {
                 openStoryForm(storyToEdit);
-                // Avisa o usuário para onde ele foi
-                showModal(
-                    "Navegação Rápida", 
-                    `Você foi redirecionado(a) para a seção de Histórias para editar a História ${storyToEdit.externalId || storyId}.`, 
-                    `<button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">OK</button>`
-                );
+                showModal("Navegação Rápida", `Você foi redirecionado(a) para a seção de Histórias para editar a História ${storyToEdit.externalId || storyId}.`, `<button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">OK</button>`);
             }, 50);
-            
         } else {
              showModal("Erro", "História não encontrada.", `<button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">OK</button>`);
         }
     }
 
-
     function closeFeatureForm() {
         document.getElementById('feature-form-container').classList.add('hidden');
-        document.getElementById('feature-stories-container')?.classList.add('hidden'); // Esconde a lista de histórias
+        document.getElementById('feature-stories-container')?.classList.add('hidden');
         document.getElementById('feature-form').reset();
-        
-        // APLICAÇÃO DA REGRA: Reexibe a lista, filtros e controles de ação
         toggleFeatureListVisibility(false);
-        
-        // Re-renderiza a lista para garantir que os controles de ação sejam atualizados (se a lista não estiver vazia)
         renderFeatures();
     }
 
     function editFeature(id) {
         const feature = features.find(f => f.id === id);
-        if (feature) {
-            openFeatureForm(feature);
-        }
+        if (feature) openFeatureForm(feature);
     }
     
-    // CORRIGIDO: Usa o _docId para exclusão no Firebase e remove histórias associadas (se necessário)
     async function deleteFeature(id) {
         const featureToDelete = features.find(f => f.id === id);
         if (!featureToDelete) return;
-
         if (window.firestone && featureToDelete._docId) {
-            // Deleção no Firebase
             await window.firestone.deleteFeatureByDocId(featureToDelete._docId);
-            
-            // Remove a associação de histórias *após* a exclusão da feature (Firebase recarrega features)
-            stories.forEach(story => {
-                if (story.featureId === id) {
-                    story.featureId = ''; // O ideal é fazer um update para cada história
-                }
-            });
-            await window.firestone.loadStories(); // Força o recarregamento das histórias para atualizar a view
-
+            stories.forEach(story => { if (story.featureId === id) story.featureId = ''; });
+            await window.firestone.loadStories();
         } else {
-            // Modo local/mock
             features = features.filter(f => f.id !== id);
-            stories.forEach(story => {
-                if (story.featureId === id) {
-                    story.featureId = ''; 
-                }
-            });
-            saveFeatures();
-            saveStories();
-            renderFeatures();
-            populateStoryFeatureSelect();
+            stories.forEach(story => { if (story.featureId === id) story.featureId = ''; });
+            saveFeatures(); saveStories(); renderFeatures(); populateStoryFeatureSelect();
         }
-
-        renderFeatures(); // Atualiza a tabela (será chamada pelo loadFeatures do firestore, mas mantido para fallback)
-        populateStoryFeatureSelect(); // Atualiza o select de histórias
+        renderFeatures();
+        populateStoryFeatureSelect();
         showModal("Feature Excluída", "A Feature foi removida com sucesso.", `<button onclick="closeModal()" class="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700">OK</button>`);
     }
 
-    // CORRIGIDO: Agora usa a função saveFeature do Firebase
     document.getElementById('feature-form').onsubmit = async function(event) {
         event.preventDefault();
-        
         if (!window.firestone) {
              showModal("Erro", "Conexão com Firebase indisponível.", `<button onclick="closeModal()" class="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700">OK</button>`);
              return;
         }
-        
         const id = document.getElementById('feature-id').value;
-        const docId = document.getElementById('feature-doc-id').value; // NOVO: Pega o ID do documento
+        const docId = document.getElementById('feature-doc-id').value;
         let externalIdValue = document.getElementById('feature-external-id').value.trim();
-        if (externalIdValue.length > 10) {
-            externalIdValue = externalIdValue.substring(0, 10);
-        }
-        
+        if (externalIdValue.length > 10) externalIdValue = externalIdValue.substring(0, 10);
         const newFeatureData = {
             id: id ? parseInt(id) : generateId(),
-            _docId: docId || undefined, // Inclui o _docId se for edição
+            _docId: docId || undefined,
             externalId: externalIdValue,
             title: document.getElementById('feature-title').value.trim(),
             description: document.getElementById('feature-description').value.trim(),
@@ -1976,138 +1692,66 @@
             status: document.getElementById('feature-status').value,
             updatedAt: new Date().toISOString()
         };
-        
-        // Verifica se é criação (se não tiver docId, é nova entrada no banco)
         const isCreation = !docId;
-        if (isCreation) {
-            newFeatureData.createdAt = new Date().toISOString();
-        }
-
+        if (isCreation) newFeatureData.createdAt = new Date().toISOString();
         try {
-            // O firestone.saveFeature irá adicionar ou atualizar o documento e *recarregar* a lista global de features.
             await window.firestone.saveFeature(newFeatureData); 
         } catch (error) {
-            console.error("Erro ao salvar Feature no Firebase:", error);
-            showModal("Erro de Conexão", "Não foi possível salvar a Feature no banco de dados.", `<button onclick="closeModal()" class="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700">OK</button>`);
+            console.error("Erro ao salvar Feature:", error);
+            showModal("Erro de Conexão", "Não foi possível salvar a Feature.", `<button onclick="closeModal()" class="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700">OK</button>`);
             return;
         }
-
-        // Se for criação, reabre no modo edição para habilitar o botão "Inserir História"
         if (isCreation) {
-             // O novo item salvo no Firebase já tem o ID do documento, 
-             // mas precisamos re-encontrar o objeto atualizado (com _docId)
-             // A função saveFeature recarrega o array global `features`, mas o `newFeatureData` local pode não ter o `_docId`
-             // A melhor prática aqui é forçar a re-renderização completa da view, que vai encontrar a feature salva.
-             
-             // Por ser assíncrono, para reabrir no modo edição, precisamos do objeto completo.
-             // Como a lista global foi recarregada, a re-renderização irá exibir o item.
-             
-             // O problema é reabrir no modo edição *com o _docId* recém-criado.
-             // A forma mais fácil é deixar que a função `saveFeature` no bloco `type="module"` retorne o objeto com `_docId`.
-             // No seu caso atual, ela não retorna, apenas recarrega.
-             
-             // SOLUÇÃO PROVISÓRIA: Reabra o formulário no modo edição com a ID *local* e o recarregamento deve pegar o _docId
              const savedFeature = features.find(f => f.id === newFeatureData.id) || newFeatureData;
-
              openFeatureForm(savedFeature);
-             showModal("Feature Salva", `Feature "${savedFeature.title}" salva com sucesso! Agora você pode inserir histórias associadas.`, `<button onclick="closeModal()" class="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700">Continuar</button>`);
+             showModal("Feature Salva", `Feature "${savedFeature.title}" salva com sucesso!`, `<button onclick="closeModal()" class="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700">Continuar</button>`);
         } else {
-             // Após edição, apenas atualiza a tabela de histórias associadas
              renderStoriesForFeature(newFeatureData.id); 
              showModal("Feature Atualizada", `Feature "${newFeatureData.title}" atualizada com sucesso!`, `<button onclick="closeModal()" class="px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700">OK</button>`);
         }
-        
-        // O firestone.saveFeature() já chama renderFeatures(). Chamamos renderStories para atualizar o select.
         populateStoryFeatureSelect();
     };
 
-    // NOVO: Função para o botão Inserir História (no formulário principal de Feature)
     function handleInsertStory() {
         const featureId = document.getElementById('feature-id').value;
         const feature = features.find(f => f.id === parseInt(featureId));
-        
-        // Verifica se o botão está habilitado (deve ser o caso se featureId for válido)
         const insertStoryBtn = document.getElementById('insert-story-btn');
         if (insertStoryBtn && insertStoryBtn.hasAttribute('disabled')) {
-             showModal(
-                "Ação Necessária", 
-                "Por favor, salve a Feature primeiro antes de adicionar histórias.", 
-                `<button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">OK</button>`
-            );
+             showModal("Ação Necessária", "Por favor, salve a Feature primeiro.", `<button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">OK</button>`);
             return;
         }
-
         if (featureId) {
-            // 1. Muda para a view de Histórias
             showView('stories');
-            
-            // 2. Abre o formulário de História no modo Criação
             openStoryForm();
-            
-            // 3. Pré-preenche o Feature ID com o ID da Feature atual
             const featureIdSelect = document.getElementById('story-feature-id');
-            if (featureIdSelect) {
-                featureIdSelect.value = featureId;
-            }
-            
-            // Opcional: Avisa o usuário
-            showModal(
-                "Nova História Associada", 
-                `O formulário de História foi aberto. O campo "Feature Associada" foi pré-preenchido com a Feature: ${feature.externalId} - ${feature.title}.`, 
-                `<button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">Entendido</button>`
-            );
-            
+            if (featureIdSelect) featureIdSelect.value = featureId;
+            showModal("Nova História Associada", `O formulário de História foi aberto.`, `<button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">Entendido</button>`);
         }
     }
 
-
-    // === STORY MANAGEMENT FUNCTIONS (CRUD e Seleção) - ADICIONADO CAMPO FEATURE ===
+    // === STORY MANAGEMENT FUNCTIONS ===
     
-    // Função para abrir a tabela de tasks associadas a uma história
     function viewStoryTasks(storyId) {
-        // Esta função está obsoleta. O novo fluxo usa openStoryTasksModal()
-        // Mantida apenas para fins de compatibilidade caso alguma parte do código antigo ainda a chame.
-        console.warn("Função viewStoryTasks() chamada (Obsoleta). Redirecionando para openStoryTasksModal().");
         openStoryTasksModal(storyId);
     }
     
-    // NOVO: Função para renderizar as tasks DENTRO DO MODAL
     function renderTasksInModal(storyId) {
         const tableBody = document.getElementById('task-list-modal-table-body');
         const noTasksMessage = document.getElementById('no-tasks-modal-message');
         const tasksTitle = document.getElementById('task-modal-list-title');
-        
         if (!tableBody || !noTasksMessage || !tasksTitle) return; 
-        
         tableBody.innerHTML = '';
-        
         const storyTasks = tasks.filter(t => t.storyId === storyId);
         const status = getStoryCompletionStatus(storyId);
         const story = stories.find(s => s.id === storyId);
-
         const externalId = story ? (story.externalId || 'N/A') : 'N/A';
         const storyTitle = story ? story.title : 'História Indefinida';
-        
-        // Título no formato: ID da história - Titulo da História - quantidade de tarefas vs. concluídas
         tasksTitle.textContent = `${externalId} - ${storyTitle} - (${status.done}/${status.total} Concluídas)`;
-
-        if (status.total === 0) {
-            noTasksMessage.classList.remove('hidden');
-        } else {
-            noTasksMessage.classList.add('hidden');
-        }
-        
+        if (status.total === 0) { noTasksMessage.classList.remove('hidden'); } else { noTasksMessage.classList.add('hidden'); }
         storyTasks.forEach(task => {
             const statusColorClass = statusColors[task.status] || 'bg-gray-100 text-gray-800'; 
-            
             const taskExternalIdHtml = task.externalId ? 
-                (task.externalLink ? 
-                    `<a href="${task.externalLink}" target="_blank" title="Abrir Link Externo da Tarefa" class="font-semibold text-indigo-600 hover:text-indigo-800 transition duration-150 inline-flex items-center space-x-1">
-                        <span>${task.externalId}</span>
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                    </a>` : task.externalId)
-                : '-';
-
+                (task.externalLink ? `<a href="${task.externalLink}" target="_blank" class="font-semibold text-indigo-600 hover:text-indigo-800 inline-flex items-center space-x-1"><span>${task.externalId}</span></a>` : task.externalId) : '-';
             const row = document.createElement('tr');
             row.className = `hover:bg-gray-50 transition duration-100`;
             row.innerHTML = `
@@ -2115,61 +1759,39 @@
                 <td class="px-6 py-4 whitespace-normal text-sm text-gray-800 font-semibold">${task.title}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${task.system}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${task.techlead}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm">
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full status-badge ${statusColorClass}">
-                        ${task.status}
-                    </span>
-                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full status-badge ${statusColorClass}">${task.status}</span></td>
                 <td class="px-4 py-4 whitespace-nowrap text-center text-sm font-medium">
-                    <button onclick="closeStoryTasksModal(); editTask(${task.id});" title="Editar Tarefa" 
-                            class="text-blue-600 hover:text-blue-900 p-1 rounded-full hover:bg-blue-50 transition duration-150">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                    </button>
-                    <button onclick="confirmDeleteTask(${task.id}, '${task.title}')" title="Excluir Tarefa" 
-                            class="text-red-600 hover:text-red-900 p-1 rounded-full hover:bg-red-50 transition duration-150 ml-1">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                    </button>
+                    <button onclick="closeStoryTasksModal(); editTask(${task.id});" class="text-blue-600 hover:text-blue-900 p-1 rounded-full transition duration-150"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
+                    <button onclick="confirmDeleteTask(${task.id}, '${task.title}')" class="text-red-600 hover:text-red-900 p-1 rounded-full transition duration-150 ml-1"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                 </td>
             `;
             tableBody.appendChild(row);
         });
-        
-        // Associa a função de criação de task ao botão do modal
         const addTaskBtn = document.getElementById('add-task-from-modal-btn');
         if (addTaskBtn) {
             addTaskBtn.onclick = () => {
                 const storyId = parseInt(document.getElementById('task-list-modal').getAttribute('data-story-id'));
                 const story = stories.find(s => s.id === storyId);
-                
                 closeStoryTasksModal();
                 openTaskModal(storyId, story ? story.title : 'Nova Tarefa');
             };
         }
     }
     
-    // NOVO: Função para abrir o modal de listagem de Tasks (chamado da tabela principal de Histórias)
     function openStoryTasksModal(storyId) {
         const modal = document.getElementById('task-list-modal');
-        
-        // Armazena o storyId para que o bloco type="module" possa saber qual task carregar (se for o caso)
         window._lastTaskModalStoryId = storyId; 
-        
         renderTasksInModal(storyId);
-
-        // Armazena o storyId para a função de adicionar task do modal
         modal.setAttribute('data-story-id', storyId);
-
         modal.classList.remove('hidden');
     }
 
-    // NOVO: Função para fechar o modal de listagem de Tasks
     function closeStoryTasksModal() {
         document.getElementById('task-list-modal').classList.add('hidden');
         document.getElementById('task-list-modal').removeAttribute('data-story-id');
-        window._lastTaskModalStoryId = null; // Limpa a referência
+        window._lastTaskModalStoryId = null;
     }
     
-    // Função para ocultar/exibir os elementos da lista de histórias
     function toggleStoryListVisibility(shouldHide) {
         const elementsToToggle = [
             document.getElementById('stories-list-header'),
@@ -2177,1853 +1799,630 @@
             document.getElementById('table-action-controls'),
             document.getElementById('stories-table-wrapper')
         ];
-
-        elementsToToggle.forEach(el => {
-            if (el) {
-                if (shouldHide) {
-                    el.classList.add('hidden');
-                } else {
-                    el.classList.remove('hidden');
-                }
-            }
-        });
+        elementsToToggle.forEach(el => { if (el) { if (shouldHide) { el.classList.add('hidden'); } else { el.classList.remove('hidden'); } } });
     }
 
-
-    // Função para atualizar os botões de ação (Editar/Excluir) e a mensagem de contagem
     function updateActionControls() {
         const count = selectedStoryIds.size;
-        const isEditing = document.getElementById('story-form-container')?.classList.contains('hidden') === false;
-
-        // Mostra/Esconde o container de controles se houver 1 ou mais itens selecionados E não estiver editando
         const controlsContainer = document.getElementById('table-action-controls');
-        if (controlsContainer) {
-            // A única mudança de visibilidade é para o container da história, para sumir na edição/tasks
-            if (count > 0 && currentView === 'stories') {
-                controlsContainer.classList.remove('hidden');
-            } else {
-                // controlsContainer.classList.add('hidden'); // Ocultado por toggleStoryListVisibility(true)
-            }
-        }
-
-        // Atualiza a mensagem de contagem
+        if (controlsContainer) { if (count > 0 && currentView === 'stories') { controlsContainer.classList.remove('hidden'); } }
         const countMessage = document.getElementById('selected-count-message');
-        if (countMessage) {
-            countMessage.textContent = `${count} ${count === 1 ? 'item selecionado' : 'itens selecionados'}`;
-        }
-
-        // Habilita/Desabilita botão de Editar
+        if (countMessage) { countMessage.textContent = `${count} ${count === 1 ? 'item selecionado' : 'itens selecionados'}`; }
         const editBtn = document.getElementById('edit-selected-btn');
-        if (editBtn) {
-            editBtn.disabled = count !== 1; // Habilita SÓ se 1 item for selecionado
-        }
-
-        // Habilita/Desabilita botão de Excluir
+        if (editBtn) { editBtn.disabled = count !== 1; }
         const deleteBtn = document.getElementById('delete-selected-btn');
-        if (deleteBtn) {
-            deleteBtn.disabled = count === 0; // Habilita se 1 ou mais itens forem selecionados
-        }
-        
-        // Atualiza o checkbox de 'selecionar todos' (em ambos os locais)
+        if (deleteBtn) { deleteBtn.disabled = count === 0; }
         const visibleCheckboxes = document.querySelectorAll('#stories-table-body input[type="checkbox"]');
         const isAllSelected = visibleCheckboxes.length > 0 && count === visibleCheckboxes.length;
         const isPartial = count > 0 && !isAllSelected;
-
         ['header-select-all', 'select-all-stories'].forEach(id => {
             const checkbox = document.getElementById(id);
-            if (checkbox) {
-                checkbox.checked = isAllSelected;
-                checkbox.indeterminate = isPartial;
-            }
+            if (checkbox) { checkbox.checked = isAllSelected; checkbox.indeterminate = isPartial; }
         });
     }
 
-    // NOVO: Atualiza os botões de ação e a mensagem de contagem (TAREFAS)
     function updateTaskActionControls() {
-        // Esta função é chamada apenas quando a TABELA EMBUTIDA de tasks (no form) está sendo usada
         const count = selectedTaskIds.size;
-        
-        // Atualiza a mensagem de contagem
         const countMessage = document.getElementById('selected-task-count-message');
-        if (countMessage) {
-            countMessage.textContent = `${count} ${count === 1 ? 'item selecionado' : 'itens selecionados'}`;
-        }
-
-        // Habilita/Desabilita botão de Editar
+        if (countMessage) { countMessage.textContent = `${count} ${count === 1 ? 'item selecionado' : 'itens selecionados'}`; }
         const editBtn = document.getElementById('edit-selected-task-btn');
-        if (editBtn) {
-            editBtn.disabled = count !== 1; // Habilita SÓ se 1 item for selecionado
-        }
-
-        // Habilita/Desabilita botão de Excluir
-        const deleteBtn = document.getElementById('delete-selected-task-btn');
-        if (deleteBtn) {
-            deleteBtn.disabled = count === 0; // Habilita se 1 ou mais itens forem selecionados
-        }
-        
-        // Atualiza o checkbox de 'selecionar todos' (em ambos os locais)
+        if (editBtn) { editBtn.disabled = count !== 1; }
+        const deleteBtnFixed = document.getElementById('delete-selected-task-btn');
+        if (deleteBtnFixed) { deleteBtnFixed.disabled = count === 0; }
         const visibleCheckboxes = document.querySelectorAll('#story-tasks-table-body input[type="checkbox"]');
         const isAllSelected = visibleCheckboxes.length > 0 && count === visibleCheckboxes.length;
         const isPartial = count > 0 && !isAllSelected;
-
         ['header-select-all-tasks', 'select-all-tasks'].forEach(id => {
             const checkbox = document.getElementById(id);
-            if (checkbox) {
-                checkbox.checked = isAllSelected;
-                checkbox.indeterminate = isPartial;
-            }
+            if (checkbox) { checkbox.checked = isAllSelected; checkbox.indeterminate = isPartial; }
         });
     }
     
-    // Adiciona/Remove o ID da história do set de seleção
     function toggleStorySelection(id, isChecked) {
         const storyId = parseInt(id);
-        if (isChecked) {
-            selectedStoryIds.add(storyId);
-        } else {
-            selectedStoryIds.delete(storyId);
-        }
+        if (isChecked) { selectedStoryIds.add(storyId); } else { selectedStoryIds.delete(storyId); }
         updateActionControls();
     }
     
-    // NOVO: Adiciona/Remove o ID da tarefa do set de seleção
     function toggleTaskSelection(id, isChecked) {
         const taskId = parseInt(id);
-        if (isChecked) {
-            selectedTaskIds.add(taskId);
-        } else {
-            selectedTaskIds.delete(taskId);
-        }
+        if (isChecked) { selectedTaskIds.add(taskId); } else { selectedTaskIds.delete(taskId); }
         updateTaskActionControls();
     }
 
-
-    // Seleciona/Desseleciona todas as histórias visíveis
     function toggleSelectAll(isChecked) {
         const checkboxes = document.querySelectorAll('#stories-table-body input[type="checkbox"]');
-        checkboxes.forEach(checkbox => {
-            checkbox.checked = isChecked;
-            const id = checkbox.getAttribute('data-id');
-            toggleStorySelection(id, isChecked);
-        });
-        // Garante que o checkbox oposto (cabeçalho/controle) também seja atualizado
+        checkboxes.forEach(checkbox => { checkbox.checked = isChecked; const id = checkbox.getAttribute('data-id'); toggleStorySelection(id, isChecked); });
         document.getElementById('header-select-all').checked = isChecked;
         document.getElementById('select-all-stories').checked = isChecked;
         updateActionControls();
     }
     
-    // NOVO: Seleciona/Desseleciona todas as tarefas visíveis
     function toggleSelectAllTasks(isChecked) {
         const checkboxes = document.querySelectorAll('#story-tasks-table-body input[type="checkbox"]');
-        checkboxes.forEach(checkbox => {
-            checkbox.checked = isChecked;
-            const id = checkbox.getAttribute('data-id');
-            toggleTaskSelection(id, isChecked);
-        });
-        // Garante que o checkbox oposto (cabeçalho/controle) também seja atualizado
+        checkboxes.forEach(checkbox => { checkbox.checked = isChecked; const id = checkbox.getAttribute('data-id'); toggleTaskSelection(id, isChecked); });
         document.getElementById('header-select-all-tasks').checked = isChecked;
         document.getElementById('select-all-tasks').checked = isChecked;
         updateTaskActionControls();
     }
 
-
-    // Edita a história selecionada (funciona apenas quando 1 item está selecionado)
     function editSelectedStory() {
         if (selectedStoryIds.size !== 1) return;
-
         const id = selectedStoryIds.values().next().value;
         const story = stories.find(s => s.id === id);
-        
-        if (story) {
-            // Limpa a seleção e abre o formulário
-            selectedStoryIds.clear();
-            updateActionControls();
-            openStoryForm(story);
-        }
+        if (story) { selectedStoryIds.clear(); updateActionControls(); openStoryForm(story); }
     }
     
-    // NOVO: Edita a tarefa selecionada (funciona apenas quando 1 item está selecionado)
     function editSelectedTask() {
         if (selectedTaskIds.size !== 1) return;
-
         const id = selectedTaskIds.values().next().value;
         const task = tasks.find(t => t.id === id);
-        
-        if (task) {
-            // Limpa a seleção e abre o modal de edição de tarefa
-            selectedTaskIds.clear();
-            updateTaskActionControls();
-            // O storyId está garantido na task
-            const story = stories.find(s => s.id === task.storyId);
-            openTaskModal(task.storyId, story ? story.title : 'Edição', task);
-        }
+        if (task) { selectedTaskIds.clear(); updateTaskActionControls(); const story = stories.find(s => s.id === task.storyId); openTaskModal(task.storyId, story ? story.title : 'Edição', task); }
     }
 
-
-    // CORRIGIDO: Exclui as histórias selecionadas usando Firebase
     async function deleteSelectedStories() {
         const idsToDelete = Array.from(selectedStoryIds);
-        
         if (window.firestone) {
-            // 1. Deleção no Firebase
             for (const id of idsToDelete) {
                 const story = stories.find(s => s.id === id);
                 if (story && story._docId) {
                     await window.firestone.deleteStoryByDocId(story._docId);
-                    
-                    // Deleção das tasks associadas
                     const relatedTasks = tasks.filter(t => t.storyId === id);
-                    for (const task of relatedTasks) {
-                        if (task._docId) {
-                            await window.firestone.deleteTaskByDocId(task._docId);
-                        }
-                    }
+                    for (const task of relatedTasks) { if (task._docId) await window.firestone.deleteTaskByDocId(task._docId); }
                 }
             }
-            // O loadStories/loadTasks no firestone já recarrega e chama renderStories
         } else {
-             // Modo local/mock
              stories = stories.filter(story => !selectedStoryIds.has(story.id));
              tasks = tasks.filter(task => !idsToDelete.includes(task.storyId));
-             saveStories();
-             saveTasks();
-             renderStories();
+             saveStories(); saveTasks(); renderStories();
         }
-        
-        selectedStoryIds.clear();
-        updateAllViews(); // Força update para dashboard e features
+        selectedStoryIds.clear(); updateAllViews(); 
     }
     
-    // NOVO: Exclui as tarefas selecionadas
     async function deleteSelectedTasks() {
         if (selectedTaskIds.size === 0) return;
-        
         const idsToDelete = Array.from(selectedTaskIds);
-        // Obtém o ID da história antes de filtrar as tasks
         const currentStoryId = tasks.find(t => idsToDelete.includes(t.id))?.storyId;
-
         if (window.firestone) {
-            // Deleção no Firebase
             for (const id of idsToDelete) {
                 const task = tasks.find(t => t.id === id);
-                if (task && task._docId) {
-                    await window.firestone.deleteTaskByDocId(task._docId);
-                }
+                if (task && task._docId) await window.firestone.deleteTaskByDocId(task._docId);
             }
         } else {
-            // Filtra as tasks, removendo as selecionadas
             tasks = tasks.filter(task => !selectedTaskIds.has(task.id));
             saveTasks();
         }
-
         selectedTaskIds.clear();
-
-        // Atualiza a listagem de tasks e a listagem de histórias (para refletir o novo status de conclusão)
-        if (currentStoryId) {
-            if (!document.getElementById('task-list-modal').classList.contains('hidden')) {
-                 renderTasksInModal(currentStoryId); 
-            }
-            renderStories();
-        }
+        if (currentStoryId) { if (!document.getElementById('task-list-modal').classList.contains('hidden')) renderTasksInModal(currentStoryId); renderStories(); }
     }
 
-
-    // Populates form and filter selects (dropdowns) based on active configurations
     function populateSelects() {
-        const selects = {
-            'story-area': 'area', 'filter-area': 'area',
-            // PO é usado na história, mas configurado na nova seção (configuração compartilhada)
-            'story-po': 'po', 'filter-po': 'po',
-            // ATUALIZADO para usar statusStory
-            'story-status': 'statusStory', 'filter-status': 'statusStory'
-        };
-
+        const selects = { 'story-area': 'area', 'filter-area': 'area', 'story-po': 'po', 'filter-po': 'po', 'story-status': 'statusStory', 'filter-status': 'statusStory' };
         for (const selectId in selects) {
             const type = selects[selectId];
             const selectElement = document.getElementById(selectId);
-            
             if (!selectElement) continue;
-
-            // Clear and add the default option
             let defaultLabel = type.charAt(0).toUpperCase() + type.slice(1);
             if (type === 'statusStory') defaultLabel = 'Status (História)';
             else if (type === 'po') defaultLabel = 'Product Owner';
             else if (type === 'area') defaultLabel = 'Área';
-            
-            // Check if it's a filter select to use the appropriate text
             const optionText = selectId.startsWith('filter') ? `-- ${defaultLabel} --` : `Selecione ${defaultLabel}`;
             selectElement.innerHTML = `<option value="">${optionText}</option>`;
-
             configs[type].filter(c => c.isActive).forEach(config => {
                 const option = document.createElement('option');
                 option.value = config.name;
                 option.textContent = config.name;
                 selectElement.appendChild(option);
             });
-
-            // Add listeners for filters
-            if (selectId.startsWith('filter')) {
-                selectElement.onchange = renderStories;
-            }
+            if (selectId.startsWith('filter')) selectElement.onchange = renderStories;
         }
     }
     
-    // Popula os selects do modal de Task
     function populateTaskSelects() {
-        const selects = {
-            'task-system': 'system', 
-            'task-techlead': 'techlead',
-            // ATUALIZADO para usar statusTask
-            'task-status': 'statusTask' 
-        };
-        
+        const selects = { 'task-system': 'system', 'task-techlead': 'techlead', 'task-status': 'statusTask' };
         for (const selectId in selects) {
             const type = selects[selectId];
             const selectElement = document.getElementById(selectId);
-            
             if (!selectElement) continue;
-
             let defaultLabel = type.charAt(0).toUpperCase() + type.slice(1);
             if (type === 'statusTask') defaultLabel = 'Status (Tarefa)';
-
-            selectElement.innerHTML = `<option value="">Selecione o ${defaultLabel.replace('Status', 'Status')}</option>`;
-            
+            selectElement.innerHTML = `<option value="">Selecione o ${defaultLabel}</option>`;
             configs[type].filter(c => c.isActive).forEach(config => {
                 const option = document.createElement('option');
                 option.value = config.name;
                 option.textContent = config.name;
                 selectElement.appendChild(option);
             });
-            
-            // Define um default para Status (Pendente/A Fazer) se existir
             if (type === 'statusTask') {
                 const defaultStatus = configs.statusTask.find(s => s.name.toLowerCase().includes('pendente') || s.name.toLowerCase().includes('fazer'));
-                if (defaultStatus) {
-                     selectElement.value = defaultStatus.name;
-                }
+                if (defaultStatus) selectElement.value = defaultStatus.name;
             }
         }
     }
     
-    // Função para contar tasks de uma história
-    function countTasksForStory(storyId) {
-        return tasks.filter(t => t.storyId === storyId).length;
-    }
+    function countTasksForStory(storyId) { return tasks.filter(t => t.storyId === storyId).length; }
 
-    // NOVA FUNÇÃO: Calcula o status de conclusão das Tasks
     function getStoryCompletionStatus(storyId) {
         const storyTasks = tasks.filter(t => t.storyId === storyId);
         const totalTasks = storyTasks.length;
-        
-        // USANDO statusTask
         const doneStatusConfig = configs.statusTask.find(s => s.name.toLowerCase() === STATUS_CONCLUIDO_NAME.toLowerCase());
-        const doneStatusName = doneStatusConfig ? doneStatusConfig.name : STATUS_CONCLUIDO_NAME; // Fallback
-
+        const doneStatusName = doneStatusConfig ? doneStatusConfig.name : STATUS_CONCLUIDO_NAME;
         const tasksDone = storyTasks.filter(t => t.status.toLowerCase() === doneStatusName.toLowerCase()).length;
         const tasksPending = totalTasks - tasksDone;
-        
         let percentage = 0;
-        if (totalTasks > 0) {
-            percentage = Math.round((tasksDone / totalTasks) * 100);
-        }
-        
-        return {
-            total: totalTasks,
-            done: tasksDone,
-            pending: tasksPending,
-            percentage: percentage
-        };
+        if (totalTasks > 0) percentage = Math.round((tasksDone / totalTasks) * 100);
+        return { total: totalTasks, done: tasksDone, pending: tasksPending, percentage: percentage };
     }
 
-    // Opens the form for new story or editing
     function openStoryForm(story = null) {
         const formContainer = document.getElementById('story-form-container');
-        // REMOVIDO: const storyTasksContainer = document.getElementById('story-tasks-container');
         const formTitle = document.getElementById('story-form-title');
         const storyIdInput = document.getElementById('story-id');
-        const storyDocIdInput = document.getElementById('story-doc-id'); // NOVO
+        const storyDocIdInput = document.getElementById('story-doc-id');
         const externalIdInput = document.getElementById('story-external-id'); 
         const externalLinkInput = document.getElementById('story-external-link'); 
-        const featureIdSelect = document.getElementById('story-feature-id'); // NOVO
-
+        const featureIdSelect = document.getElementById('story-feature-id'); 
         formContainer.classList.remove('hidden');
-        
-        // APLICAÇÃO DA REGRA: Oculta a lista e os filtros
         toggleStoryListVisibility(true); 
-
-        // Esconde os controles de ação de cima quando o formulário está aberto
         document.getElementById('table-action-controls')?.classList.add('hidden');
-        // REMOVIDO: storyTasksContainer?.classList.add('hidden'); // Esconde Tasks ao fechar por padrão
-
-        // Habilita/Desabilita o botão Inserir Tarefa na edição vs criação
         const insertTaskBtn = document.getElementById('insert-task-btn');
         if (insertTaskBtn) {
-            if (story && story.id) {
-                // Se for Edição: Habilita visualmente e funcionalmente
-                insertTaskBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                insertTaskBtn.removeAttribute('disabled');
-            } else {
-                // Se for Nova História: Desabilita visualmente e funcionalmente (estado padrão do HTML)
-                insertTaskBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                insertTaskBtn.setAttribute('disabled', 'true');
-            }
+            if (story && story.id) { insertTaskBtn.classList.remove('opacity-50', 'cursor-not-allowed'); insertTaskBtn.removeAttribute('disabled'); }
+            else { insertTaskBtn.classList.add('opacity-50', 'cursor-not-allowed'); insertTaskBtn.setAttribute('disabled', 'true'); }
         }
-        
-        // Popula os selects de configuração (Area, PO, Status) e o de Feature
-        populateSelects();
-        populateStoryFeatureSelect();
-
-
+        populateSelects(); populateStoryFeatureSelect();
         if (story) {
             formTitle.textContent = "Editar História";
             storyIdInput.value = story.id;
-            storyDocIdInput.value = story._docId || ''; // NOVO: Seta o _docId
-            
-            // LOAD FIELDS
+            storyDocIdInput.value = story._docId || ''; 
             externalIdInput.value = story.externalId || ''; 
             externalLinkInput.value = story.externalLink || ''; 
             document.getElementById('story-title').value = story.title;
             document.getElementById('story-description').value = story.description;
-            
-            // LOAD NEW FIELDS
             document.getElementById('story-requested-date').value = story.requestedDate || '';
             document.getElementById('story-requester-name').value = story.requesterName || '';
-
             document.getElementById('story-area').value = story.area;
             document.getElementById('story-po').value = story.po;
-            document.getElementById('story-status').value = story.status; // Usar status de história
+            document.getElementById('story-status').value = story.status;
             document.getElementById('story-priority').value = story.priority;
-            
-            // NOVO: Carregar Feature ID
             featureIdSelect.value = story.featureId || '';
-            
             document.getElementById('story-form-submit').textContent = "Atualizar História";
-            
-            // REMOVIDO: A tabela de tasks embutida não é mais mostrada/renderizada aqui
-            // if (storyTasksContainer) { renderTasksForStory(story.id); storyTasksContainer.classList.remove('hidden'); }
-
         } else {
             formTitle.textContent = "Nova História";
-            storyIdInput.value = generateId(); // Gera um ID local para a lista se necessário
-            storyDocIdInput.value = ''; // ID do documento vazio para criação
+            storyIdInput.value = generateId(); 
+            storyDocIdInput.value = ''; 
             document.getElementById('story-form').reset();
             document.getElementById('story-form-submit').textContent = "Salvar História";
-            
-            // Limpa o select de Feature
             featureIdSelect.value = '';
-
-            // SET DEFAULTS
             document.getElementById('story-requested-date').value = new Date().toISOString().substring(0, 10);
         }
-        // Ensure the user sees the form
         document.getElementById('story-form-container').scrollIntoView({ behavior: 'smooth' });
     }
     
-    // Função para renderizar as Tasks na tabela (OBSELETA, USADA APENAS NO MODO EMBUTIDO ANTERIOR)
-    function renderTasksForStory(storyId) {
-        // Este é um vestígio do código anterior que usava uma tabela embutida no form de Story.
-        // A lógica foi movida para renderTasksInModal().
-        // Mantida apenas para evitar quebra de código.
-        const tasksTitle = document.getElementById('story-tasks-title'); 
-        if (tasksTitle) tasksTitle.textContent = `Tarefas Associadas - OBSOLETA`;
-        console.warn("renderTasksForStory() chamada, mas está obsoleta. O Modal deve ser usado.");
-    }
-
-
     function closeStoryForm() {
-        // NOVO: Limpar o ID da história ao fechar o formulário/tabela de tasks
         document.getElementById('story-id').value = ''; 
-        
         document.getElementById('story-form-container')?.classList.add('hidden');
-        // REMOVIDO: document.getElementById('story-tasks-container')?.classList.add('hidden'); 
         document.getElementById('story-form')?.reset();
-         
-        // Limpa a seleção de tarefas ao fechar a view de tasks
         selectedTaskIds.clear();
-        
-        // APLICAÇÃO DA REGRA: Exibe a lista e os filtros
         toggleStoryListVisibility(false);
-
-        // Re-renderiza a lista para garantir que os controles de ação sejam atualizados (se a lista não estiver vazia)
         renderStories(); 
     }
 
-    // Função para o botão Inserir Tarefa (no formulário principal)
     function handleInsertTask() {
         const storyId = document.getElementById('story-id').value;
         const story = stories.find(s => s.id === parseInt(storyId));
         const storyTitle = story ? story.title : '';
-        
-        // Verifica se o botão está habilitado (deve ser o caso se storyId for válido)
         const insertTaskBtn = document.getElementById('insert-task-btn');
         if (insertTaskBtn && insertTaskBtn.hasAttribute('disabled')) {
-             showModal(
-                "Ação Necessária", 
-                "Por favor, salve a história primeiro antes de adicionar tarefas.", 
-                `<button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">OK</button>`
-            );
+             showModal("Ação Necessária", "Salve a história primeiro.", `<button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">OK</button>`);
             return;
         }
-
-
-        if (storyId) {
-            // Abre o modal de Task em modo Criação
-            openTaskModal(parseInt(storyId), storyTitle);
-        }
+        if (storyId) openTaskModal(parseInt(storyId), storyTitle);
     }
     
-    // NOVO: Função para o botão Nova Tarefa na listagem de Tasks (Tabela Embutida)
-    function handleInsertTaskFromList() {
-        // Esta função era usada para adicionar task da tabela embutida (agora removida),
-        // mas pode ser reusada para adicionar task a partir do Modal de Listagem de Tasks.
-        const modal = document.getElementById('task-list-modal');
-        const storyIdAttr = modal.getAttribute('data-story-id');
-
-        if (!storyIdAttr) {
-            showModal(
-                "Erro de Contexto", 
-                "A história associada não foi identificada.", 
-                `<button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">OK</button>`
-            );
-            return;
-        }
-        
-        const storyId = parseInt(storyIdAttr);
-        const story = stories.find(s => s.id === storyId);
-        const storyTitle = story ? story.title : '';
-
-        // Fecha o modal de lista de Tasks e abre o modal de criação de Task
-        closeStoryTasksModal();
-        openTaskModal(storyId, storyTitle);
-    }
-    
-    // CORRIGIDO: Função para salvar a Task (Criação e Edição) usando Firebase
     document.getElementById('task-form').onsubmit = async function(event) {
         event.preventDefault();
-        
-        if (!window.firestone) {
-             showModal("Erro", "Conexão com Firebase indisponível.", `<button onclick="closeModal()" class="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700">OK</button>`);
-             return;
-        }
-        
+        if (!window.firestone) return;
         const storyId = parseInt(document.getElementById('task-story-id').value);
-        const taskId = document.getElementById('task-id').value; // ID local
-        const docId = document.getElementById('task-doc-id').value; // NOVO: ID do documento Firebase
-        const isEditing = !!docId; // Agora verifica o docId para saber se é edição
-
-        // Captura o valor do ID Externo
+        const taskId = document.getElementById('task-id').value;
+        const docId = document.getElementById('task-doc-id').value;
+        const isEditing = !!docId;
         let externalIdValue = document.getElementById('task-external-id').value.trim();
-        if (externalIdValue.length > 10) {
-            externalIdValue = externalIdValue.substring(0, 10); // Trunca se for maior que 10
-        }
-        // Captura o Link Externo
+        if (externalIdValue.length > 10) externalIdValue = externalIdValue.substring(0, 10);
         const externalLinkValue = document.getElementById('task-external-link').value.trim();
-        // NOVO: Captura o ID GMUD
         const gmudIdValue = document.getElementById('task-gmud-id').value.trim();
-        // NOVO: Gera o link da GMUD se o ID estiver preenchido
-        const gmudLinkValue = gmudIdValue ? `${GMUD_BASE_URL}${gmudIdValue}` : '';
-
-
         const taskData = {
-            id: taskId ? parseInt(taskId) : generateId(), // Mantém o ID local para referências internas
-            _docId: docId || undefined, // Inclui o _docId se for edição
+            id: taskId ? parseInt(taskId) : generateId(),
+            _docId: docId || undefined,
             storyId: storyId,
             externalId: externalIdValue,
             externalLink: externalLinkValue, 
-            gmudId: gmudIdValue,     // NOVO: Salva ID da GMUD
-            gmudLink: gmudLinkValue, // NOVO: Salva Link da GMUD
+            gmudId: gmudIdValue,
             title: document.getElementById('task-title').value.trim(),
             system: document.getElementById('task-system').value,
             techlead: document.getElementById('task-techlead').value,
             status: document.getElementById('task-status').value,
             updatedAt: new Date().toISOString()
         };
-        
-        let message = '';
-
-        if (!isEditing) {
-            // Criação
-            taskData.createdAt = new Date().toISOString();
-        }
-
+        if (!isEditing) taskData.createdAt = new Date().toISOString();
         try {
             await window.firestone.saveTask(taskData);
-            message = isEditing ? `Task "${taskData.title}" atualizada com sucesso!` : `Task "${taskData.title}" salva com sucesso e vinculada à História!`;
+            if (!document.getElementById('task-list-modal').classList.contains('hidden')) renderTasksInModal(storyId); 
+            renderStories(); renderFeatures(); closeTaskModal();
+            showModal("Sucesso", "Task salva com sucesso!", `<button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">OK</button>`);
         } catch (error) {
-             console.error("Erro ao salvar Task no Firebase:", error);
-             showModal("Erro de Conexão", "Não foi possível salvar a Task no banco de dados.", `<button onclick="closeModal()" class="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700">OK</button>`);
-             return;
+             console.error("Erro ao salvar Task:", error);
         }
-
-        
-        // 1. Renderiza novamente o modal de tasks (se estiver aberto)
-        if (!document.getElementById('task-list-modal').classList.contains('hidden')) {
-             // Como firestone.saveTask recarrega as tasks, basta re-renderizar o modal com a lista atualizada
-             renderTasksInModal(storyId); 
-        }
-
-        // 2. Atualiza a tabela principal e features
-        renderStories(); 
-        renderFeatures(); 
-        
-        closeTaskModal();
-        
-        showModal(
-            isEditing ? "Task Atualizada" : "Task Salva", 
-            message, 
-            `<button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">OK</button>`
-        );
     };
 
-
-    // CORRIGIDO: Save/Update story logic usando Firebase
     document.getElementById('story-form').onsubmit = async function(event) {
         event.preventDefault();
-        
-        if (!window.firestone) {
-             showModal("Erro", "Conexão com Firebase indisponível.", `<button onclick="closeModal()" class="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700">OK</button>`);
-             return;
-        }
-        
+        if (!window.firestone) return;
         const id = document.getElementById('story-id').value;
-        const docId = document.getElementById('story-doc-id').value; // NOVO: Pega o ID do documento
+        const docId = document.getElementById('story-doc-id').value;
         const isEditing = !!docId;
-
-        // Define o tipo de história como 'História', já que o seletor foi removido.
-        const storyType = isEditing ? stories.find(s => s.id === parseInt(id))?.type || 'História' : 'História';
-        
-        // Captura o valor do ID Externo, garantindo que seja um número de até 10 dígitos.
+        const storyType = 'História';
         let externalIdValue = document.getElementById('story-external-id').value.trim();
-        if (externalIdValue.length > 10) {
-            externalIdValue = externalIdValue.substring(0, 10); // Trunca se for maior que 10
-        }
-        
-        // Captura o valor do Link Externo
+        if (externalIdValue.length > 10) externalIdValue = externalIdValue.substring(0, 10);
         const externalLinkValue = document.getElementById('story-external-link').value.trim();
-        
-        // NOVO: Captura o Feature ID
         const featureIdValue = document.getElementById('story-feature-id').value;
-
-
         const storyData = {
             id: id ? parseInt(id) : generateId(),
-            _docId: docId || undefined, // Inclui o _docId se for edição
+            _docId: docId || undefined,
             type: storyType, 
             externalId: externalIdValue, 
             externalLink: externalLinkValue, 
             featureId: featureIdValue ? parseInt(featureIdValue) : '', 
             title: document.getElementById('story-title').value.trim(),
             description: document.getElementById('story-description').value.trim(),
-            
-            // SAVE NEW FIELDS
             requestedDate: document.getElementById('story-requested-date').value,
             requesterName: document.getElementById('story-requester-name').value.trim(),
-
             area: document.getElementById('story-area').value,
             po: document.getElementById('story-po').value,
-            status: document.getElementById('story-status').value, // Status de História
+            status: document.getElementById('story-status').value, 
             priority: document.getElementById('story-priority').value,
             updatedAt: new Date().toISOString()
         };
-        
-        if (!isEditing) {
-            storyData.createdAt = new Date().toISOString();
-        }
-
+        if (!isEditing) storyData.createdAt = new Date().toISOString();
         try {
-            // O firestone.saveStory irá adicionar ou atualizar o documento e *recarregar* a lista global de stories.
             await window.firestone.saveStory(storyData);
-        } catch (error) {
-             console.error("Erro ao salvar História no Firebase:", error);
-             showModal("Erro de Conexão", "Não foi possível salvar a História no banco de dados.", `<button onclick="closeModal()" class="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700">OK</button>`);
-             return;
-        }
-
-        // Se a história foi recém-criada, reabra o formulário no modo de edição para que o botão de Task e a tabela apareçam
-        if (!isEditing) {
-            // Reabrir o formulário com o objeto salvo (que tem o novo _docId)
-            const savedStory = stories.find(s => s.id === storyData.id) || storyData;
-
-            // Mantém o formulário aberto para edição e task
-            openStoryForm(savedStory); 
-            showModal("História Salva", `História "${savedStory.title}" salva com sucesso! Agora você pode adicionar tarefas.`, `<button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">Continuar</button>`);
-        } else {
-             // Scroll back to the main view if it was an edit
-            closeStoryForm(); // Fech a o form após a edição. A função closeStoryForm irá reexibir a lista.
-            document.getElementById('stories-view')?.scrollIntoView({ behavior: 'smooth' });
-        }
-        
-        // O firestone.saveStory() já chama renderStories().
-        renderFeatures(); // Atualiza a visualização de Features (se a Feature ID mudou)
+            if (!isEditing) {
+                const savedStory = stories.find(s => s.id === storyData.id) || storyData;
+                openStoryForm(savedStory); 
+                showModal("História Salva", "Sucesso! Adicione tarefas agora.", `<button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">Continuar</button>`);
+            } else {
+                closeStoryForm();
+            }
+            renderFeatures();
+        } catch (error) { console.error("Erro ao salvar História:", error); }
     };
 
-
-    // Renders the list of stories with applied filters
     function renderStories() {
         const tableBody = document.getElementById('stories-table-body');
         const noStoriesMessage = document.getElementById('no-stories-message');
-        if (!tableBody || !noStoriesMessage) return; // Safety check
-        
+        if (!tableBody || !noStoriesMessage) return; 
         tableBody.innerHTML = '';
-        
         const filterArea = document.getElementById('filter-area').value;
         const filterPo = document.getElementById('filter-po').value;
-        const filterStatus = document.getElementById('filter-status').value; // Usa statusStory
+        const filterStatus = document.getElementById('filter-status').value; 
         const filterPriority = document.getElementById('filter-priority').value;
-        const filterCompletionStatus = document.getElementById('filter-completion-status').value; // NOVO FILTRO
-
-        // Apply filters
+        const filterCompletionStatus = document.getElementById('filter-completion-status').value;
         const filteredStories = stories.filter(story => {
             const passesArea = filterArea === '' || story.area === filterArea;
             const passesPo = filterPo === '' || story.po === filterPo;
             const passesStatus = filterStatus === '' || story.status === filterStatus;
             const passesPriority = filterPriority === '' || story.priority === filterPriority;
-
-            // NOVO: Filtragem por status de conclusão das Tasks
             const completionStatus = getStoryCompletionStatus(story.id);
             let passesCompletion = true;
-            
-            if (filterCompletionStatus === 'pending') {
-                passesCompletion = completionStatus.pending > 0;
-            } else if (filterCompletionStatus === 'done') {
-                passesCompletion = completionStatus.percentage === 100 && completionStatus.total > 0;
-            } else if (filterCompletionStatus === 'no_tasks') {
-                passesCompletion = completionStatus.total === 0;
-            }
-
-
+            if (filterCompletionStatus === 'pending') passesCompletion = completionStatus.pending > 0;
+            else if (filterCompletionStatus === 'done') passesCompletion = completionStatus.percentage === 100 && completionStatus.total > 0;
+            else if (filterCompletionStatus === 'no_tasks') passesCompletion = completionStatus.total === 0;
             return passesArea && passesPo && passesStatus && passesPriority && passesCompletion;
         });
-
         if (filteredStories.length === 0) {
             noStoriesMessage.classList.remove('hidden');
-            // Esconde os controles de ação se não houver histórias
             document.getElementById('table-action-controls')?.classList.add('hidden');
             return;
         } else {
             noStoriesMessage.classList.add('hidden');
         }
-        
-        // O controle de ações agora é mostrado pela função updateActionControls, que é chamada no final
-        // do renderStories e quando uma seleção é feita.
-
-        // Sort by Priority (High > Medium > Low)
         const priorityOrder = { 'Alta': 3, 'Média': 2, 'Baixa': 1 };
         filteredStories.sort((a, b) => priorityOrder[b.priority] - priorityOrder[a.priority]);
-
         filteredStories.forEach(story => {
             const row = document.createElement('tr');
-            // Verifica se a história está selecionada para manter o checkbox marcado
             const isSelected = selectedStoryIds.has(story.id);
             row.className = `hover:bg-gray-50 transition duration-100 ${isSelected ? 'bg-indigo-50/50' : ''}`;
-
-            // Format inclusion date (YYYY-MM-DD to DD/MM/YYYY)
             const formattedDate = story.requestedDate ? new Date(story.requestedDate + 'T00:00:00').toLocaleDateString('pt-BR') : '-';
-            
-            // Determine priority style for the tag
             const priorityClass = priorityColors[story.priority] || 'bg-gray-100 text-gray-800 border-gray-500';
-
-            // Determine Status color 
             const statusColorClass = statusColors[story.status] || 'bg-gray-100 text-gray-800';
-
-            // Determine Type color (simulating badges)
             const typeConfig = STORY_TYPES.find(t => t.name === (story.type || 'História'));
             const typeClass = typeConfig ? typeConfig.color : 'bg-gray-100 text-gray-800 border-gray-400';
-            
-            // Exibe o Link Externo como um ícone clicável se existir - NOVO LOCAL
-            const externalLinkHtml = story.externalLink ? 
-                `<a href="${story.externalLink}" target="_blank" title="Abrir Link Externo" class="text-indigo-600 hover:text-indigo-800 ml-2 inline-block">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                </a>` : '';
-
-            // NOVO: Cálculo do status de conclusão das tasks
+            const externalLinkHtml = story.externalLink ? `<a href="${story.externalLink}" target="_blank" class="text-indigo-600 ml-2 inline-block"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg></a>` : '';
             const taskStatus = getStoryCompletionStatus(story.id);
-            
-            // NOVO: Criação do ProgressBar e Texto para Status de Conclusão (COMO NA FEATURE)
             let taskCompletionHtml = '-';
-            
             if (taskStatus.total > 0) {
-                const text = `${taskStatus.done}/${taskStatus.total}`;
-                const percentage = taskStatus.percentage;
-                
-                // Agora, este botão/barra chama o NOVO MODAL
-                taskCompletionHtml = `
-                    <button onclick="openStoryTasksModal(${story.id})" 
-                        class="flex items-center space-x-2 text-left p-1 rounded-md hover:bg-indigo-50 transition duration-150 w-full">
-                        <span class="text-sm font-semibold text-gray-800">${text}</span>
-                        <div class="completion-bar w-full flex-1">
-                            <div class="completion-fill bg-indigo-600" style="width: ${percentage}%;"></div>
-                        </div>
-                        <span class="text-xs text-gray-500">${percentage}%</span>
-                    </button>
-                `;
+                taskCompletionHtml = `<button onclick="openStoryTasksModal(${story.id})" class="flex items-center space-x-2 text-left p-1 rounded-md hover:bg-indigo-50 w-full"><span class="text-sm font-semibold">${taskStatus.done}/${taskStatus.total}</span><div class="completion-bar w-full flex-1"><div class="completion-fill bg-indigo-600" style="width: ${taskStatus.percentage}%;"></div></div><span class="text-xs text-gray-500">${taskStatus.percentage}%</span></button>`;
             }
-
-            
-            const externalIdContent = story.externalId ? `
-                <span class="inline-flex items-center font-semibold">
-                    ${story.externalId}
-                    ${externalLinkHtml}
-                </span>
-            ` : '-';
-
             row.innerHTML = `
-                <td class="p-3 text-sm font-medium text-gray-900">
-                    <input type="checkbox" data-id="${story.id}" 
-                        onchange="toggleStorySelection('${story.id}', this.checked); updateActionControls();"
-                        ${isSelected ? 'checked' : ''}
-                        class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500">
-                </td>
-                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-600">
-                    ${externalIdContent}
-                </td>
-                <td class="px-4 py-4 whitespace-nowrap text-xs font-semibold">
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full border ${typeClass}">
-                        ${story.type || 'História'}
-                    </span>
-                </td>
-                <td class="px-6 py-4 whitespace-normal text-sm text-gray-800 font-semibold flex items-center">
-                    <span>${story.title}</span>
-                </td>
+                <td class="p-3 text-sm font-medium"><input type="checkbox" onchange="toggleStorySelection('${story.id}', this.checked); updateActionControls();" ${isSelected ? 'checked' : ''} class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded"></td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm">${story.externalId || '-'}${externalLinkHtml}</td>
+                <td class="px-4 py-4 whitespace-nowrap text-xs"><span class="px-2 inline-flex leading-5 font-semibold rounded-full border ${typeClass}">${story.type || 'História'}</span></td>
+                <td class="px-6 py-4 text-sm text-gray-800 font-semibold">${story.title}</td>
                 <td class="px-6 py-4 text-sm text-gray-500">${story.area}</td>
                 <td class="px-6 py-4 text-sm text-gray-500">${story.po}</td>
                 <td class="px-6 py-4 text-sm text-gray-500">${story.requesterName || '-'}</td>
                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">${formattedDate}</td>
-                <td class="px-4 py-4 whitespace-nowrap text-sm">
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full status-badge ${statusColorClass}">
-                        ${story.status}
-                    </span>
-                </td>
-                <td class="px-4 py-4 whitespace-nowrap text-sm">
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-xl priority-badge ${priorityClass}">
-                        ${story.priority}
-                    </span>
-                </td>
-                <td class="px-4 py-4 whitespace-nowrap w-48">
-                    ${taskCompletionHtml}
-                </td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full status-badge ${statusColorClass}">${story.status}</span></td>
+                <td class="px-4 py-4 whitespace-nowrap text-sm"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-xl priority-badge ${priorityClass}">${story.priority}</span></td>
+                <td class="px-4 py-4 whitespace-nowrap w-48">${taskCompletionHtml}</td>
             `;
             tableBody.appendChild(row);
         });
-        
-        // Garante que o estado dos controles seja atualizado após a renderização
         updateActionControls();
     }
 
-    // CORRIGIDO: Deletes a story usando Firebase
     async function deleteStory(id) {
         const storyToDelete = stories.find(s => s.id === id);
-        
         if (!storyToDelete) return;
-        
         if (window.firestone && storyToDelete._docId) {
-            // Deleção no Firebase
             await window.firestone.deleteStoryByDocId(storyToDelete._docId);
-            
-            // Deleção das tasks associadas
             const relatedTasks = tasks.filter(t => t.storyId === id);
-            for (const task of relatedTasks) {
-                if (task._docId) {
-                    await window.firestone.deleteTaskByDocId(task._docId);
-                }
-            }
+            for (const task of relatedTasks) { if (task._docId) await window.firestone.deleteTaskByDocId(task._docId); }
         } else {
-            // Modo local/mock
             stories = stories.filter(story => story.id !== id);
             tasks = tasks.filter(task => task.storyId !== id);
-            saveStories();
-            saveTasks();
-            renderStories();
+            saveStories(); saveTasks(); renderStories();
         }
-        
-        // If on the dashboard, update it too
         updateAllViews();
     }
 
-    // === DASHBOARD FUNCTIONS (CHARTS) ===
-    
-    // CORRIGIDO: Adiciona função updateDashboard para ser chamada após o load do Firebase
-    function updateDashboard() {
-        if (currentView === 'dashboard') {
-            renderDashboard();
-        }
-    }
+    function updateDashboard() { if (currentView === 'dashboard') renderDashboard(); }
 
-
-    // Clears all existing charts before drawing new ones
-    function destroyCharts() {
-        myCharts.forEach(chart => chart.destroy());
-        myCharts = [];
-    }
+    function destroyCharts() { myCharts.forEach(chart => chart.destroy()); myCharts = []; }
     
-    // Function to populate the new PO filter on the Dashboard
     function populateDashboardPoFilter() {
-        if (!poFilterElement) {
-            poFilterElement = document.getElementById('filter-dashboard-po');
-        }
-        
+        if (!poFilterElement) poFilterElement = document.getElementById('filter-dashboard-po');
         if (!poFilterElement) return;
-
         const currentPo = poFilterElement.value;
-        poFilterElement.innerHTML = `<option value="">-- Todos os Product Owners --</option>`;
-
-        configs.po.filter(c => c.isActive).forEach(config => {
-            const option = document.createElement('option');
-            option.value = config.name;
-            option.textContent = config.name;
-            poFilterElement.appendChild(option);
-        });
-
-        // Restore the selected value
-        if (currentPo) {
-            poFilterElement.value = currentPo;
-        }
+        poFilterElement.innerHTML = `<option value="">-- Todos os POs --</option>`;
+        configs.po.filter(c => c.isActive).forEach(config => { const option = document.createElement('option'); option.value = config.name; option.textContent = config.name; poFilterElement.appendChild(option); });
+        if (currentPo) poFilterElement.value = currentPo;
     }
 
-    // Function to populate the new Status filter on the Dashboard
     function populateDashboardStatusFilter() {
-        if (!statusFilterElement) {
-            statusFilterElement = document.getElementById('filter-dashboard-status');
-        }
-
+        if (!statusFilterElement) statusFilterElement = document.getElementById('filter-dashboard-status');
         if (!statusFilterElement) return;
-
         const currentStatus = statusFilterElement.value;
         statusFilterElement.innerHTML = `<option value="">-- Todos os Status --</option>`;
-
-        // ATUALIZADO para usar statusStory para o dashboard de Histórias
-        configs.statusStory.filter(c => c.isActive).forEach(config => {
-            const option = document.createElement('option');
-            option.value = config.name;
-            option.textContent = config.name;
-            statusFilterElement.appendChild(option);
-        });
-
-        // Restore the selected value
-        if (currentStatus) {
-            statusFilterElement.value = currentStatus;
-        }
+        configs.statusStory.filter(c => c.isActive).forEach(config => { const option = document.createElement('option'); option.value = config.name; option.textContent = config.name; statusFilterElement.appendChild(option); });
+        if (currentStatus) statusFilterElement.value = currentStatus;
     }
 
-    // Prepares data for the Total Initiatives by Area chart
     function prepareAreaTotalData() {
-        // Conta todas as áreas presentes nas histórias, garantindo que mesmo as não configuradas sejam incluídas
-        const allAreas = new Set(stories.map(s => s.area).filter(a => a));
-        
-        // Cria a lista final de áreas, garantindo uma ordem (opcional: ordenar alfabeticamente)
-        const areas = Array.from(allAreas);
-
-        // Count stories by area
-        const areaCounts = areas.reduce((acc, area) => { 
-            acc[area] = stories.filter(s => s.area === area).length;
-            return acc;
-        }, {});
-
-        return {
-            labels: Object.keys(areaCounts),
-            datasets: [{
-                label: 'Total de Histórias',
-                data: Object.values(areaCounts),
-                backgroundColor: chartColors['Chart.Total'], // Indigo
-                borderColor: chartColors['Chart.Total'],
-                borderWidth: 1
-            }]
-        };
+        const allAreas = Array.from(new Set(stories.map(s => s.area).filter(a => a)));
+        const areaCounts = allAreas.reduce((acc, area) => { acc[area] = stories.filter(s => s.area === area).length; return acc; }, {});
+        return { labels: Object.keys(areaCounts), datasets: [{ label: 'Total de Histórias', data: Object.values(areaCounts), backgroundColor: chartColors['Chart.Total'] }] };
     }
 
-    // Prepares data for the Status by Area chart (Stacked or Filtered)
     function prepareAreaStatusData(selectedStatusName = null) {
-        // USANDO statusStory
         const activeStatuses = configs.statusStory.filter(c => c.isActive).map(c => c.name);
-        
+        const allStoryAreas = Array.from(new Set(stories.map(s => s.area).filter(a => a)));
         if (selectedStatusName) {
-            // Single Status Mode (Total of the selected status by Area)
-            // Lista de áreas para o filtro único (usa todas as áreas existentes nas histórias)
-            const areas = Array.from(new Set(stories.map(s => s.area).filter(a => a)));
-            
-            const areaCounts = areas.reduce((acc, area) => {
-                acc[area] = stories.filter(s => s.area === area && s.status === selectedStatusName).length;
-                return acc;
-            }, {});
-
-            return {
-                mode: 'single',
-                labels: Object.keys(areaCounts),
-                datasets: [{
-                    label: `Histórias em: ${selectedStatusName}`,
-                    // Usa a cor baseada no nome do status (statusColors está atualizado)
-                    backgroundColor: chartColors[selectedStatusName] || chartColors['Geral'],
-                    data: Object.values(areaCounts),
-                }]
-            };
-
+            const areaCounts = allStoryAreas.reduce((acc, area) => { acc[area] = stories.filter(s => s.area === area && s.status === selectedStatusName).length; return acc; }, {});
+            return { mode: 'single', labels: Object.keys(areaCounts), datasets: [{ label: selectedStatusName, backgroundColor: chartColors[selectedStatusName] || chartColors['Geral'], data: Object.values(areaCounts) }] };
         } else {
-            // Default Mode: Status by Area (Stacked) - CORRIGIDO PARA INCLUIR TODAS AS ÁREAS DAS HISTÓRIAS
-            
-            // 1. Coleta todas as áreas presentes nas histórias
-            const allStoryAreas = new Set(stories.map(s => s.area).filter(a => a));
-            const areas = Array.from(allStoryAreas); // Usa todas as áreas encontradas nas histórias
-
             const areaStatusCounts = {};
-            
-            // Inicializa a contagem para todas as áreas e status
-            areas.forEach(area => areaStatusCounts[area] = {});
-            activeStatuses.forEach(status => {
-                areas.forEach(area => areaStatusCounts[area][status] = 0);
-            });
-
-            // Preenche a contagem
-            stories.forEach(story => {
-                if (areas.includes(story.area) && activeStatuses.includes(story.status)) {
-                    areaStatusCounts[story.area][story.status] += 1;
-                }
-            });
-
-            // Cria o dataset para o Chart.js
-            const datasets = activeStatuses.map(status => {
-                return {
-                    label: status,
-                    data: areas.map(area => areaStatusCounts[area][status]),
-                    // Usa a cor baseada no nome do status
-                    backgroundColor: chartColors[status] || chartColors['Geral'],
-                };
-            });
-
-            return {
-                mode: 'stacked',
-                labels: areas,
-                datasets: datasets
-            };
+            allStoryAreas.forEach(area => { areaStatusCounts[area] = {}; activeStatuses.forEach(status => areaStatusCounts[area][status] = stories.filter(s => s.area === area && s.status === status).length); });
+            const datasets = activeStatuses.map(status => ({ label: status, data: allStoryAreas.map(area => areaStatusCounts[area][status]), backgroundColor: chartColors[status] || chartColors['Geral'] }));
+            return { mode: 'stacked', labels: allStoryAreas, datasets: datasets };
         }
     }
 
-    // Prepares data for the PO by Status chart.
-    // If poName is provided, group ONLY that PO's stories by status (single mode).
     function preparePOStatusData(poName = null) {
-        // USANDO statusStory
         const activeStatuses = configs.statusStory.filter(c => c.isActive).map(c => c.name);
-        
-        let filteredStories = stories;
-        
+        const allStoryPOs = Array.from(new Set(stories.map(s => s.po).filter(p => p)));
         if (poName) {
-            filteredStories = stories.filter(s => s.po === poName);
-            
-            // Single PO Mode: Status count for that PO
-            const statusCounts = activeStatuses.reduce((acc, status) => {
-                acc[status] = filteredStories.filter(s => s.status === status).length;
-                return acc;
-            }, {});
-            
-            return {
-                mode: 'single',
-                labels: Object.keys(statusCounts).filter(status => statusCounts[status] > 0),
-                data: Object.values(statusCounts).filter(count => count > 0)
-            };
-
+            const statusCounts = activeStatuses.reduce((acc, status) => { acc[status] = stories.filter(s => s.po === poName && s.status === status).length; return acc; }, {});
+            return { mode: 'single', labels: Object.keys(statusCounts).filter(s => statusCounts[s] > 0), data: Object.values(statusCounts).filter(c => c > 0) };
         } else {
-            // Default Mode: Grouped by PO and Status (Stacked Horizontal)
-            
-            // 1. Coleta todos os POs presentes nas histórias (incluindo os não configurados/desativados)
-            const allStoryPOs = new Set(stories.map(s => s.po).filter(p => p));
-            const pos = Array.from(allStoryPOs);
-
             const poStatusCounts = {};
-            pos.forEach(po => poStatusCounts[po] = {});
-            activeStatuses.forEach(status => {
-                pos.forEach(po => poStatusCounts[po][status] = 0);
-            });
-
-            stories.forEach(story => {
-                if (pos.includes(story.po) && activeStatuses.includes(story.status)) {
-                    poStatusCounts[story.po][story.status] += 1;
-                }
-            });
-
-            const datasets = activeStatuses.map(status => {
-                return {
-                    label: status,
-                    data: pos.map(po => poStatusCounts[po][status]),
-                    // Usa a cor baseada no nome do status
-                    backgroundColor: chartColors[status] || chartColors['Geral'],
-                };
-            });
-
-            return {
-                mode: 'stacked',
-                labels: pos,
-                datasets: datasets
-            };
+            allStoryPOs.forEach(po => { poStatusCounts[po] = {}; activeStatuses.forEach(status => poStatusCounts[po][status] = stories.filter(s => s.po === po && s.status === status).length); });
+            const datasets = activeStatuses.map(status => ({ label: status, data: allStoryPOs.map(po => poStatusCounts[po][status]), backgroundColor: chartColors[status] || chartColors['Geral'] }));
+            return { mode: 'stacked', labels: allStoryPOs, datasets: datasets };
         }
     }
 
-
-    // Prepares data for the Done vs Pending Initiatives chart
     function prepareDonePendingData() {
-        // USANDO statusStory para identificar o status de conclusão da História
         const statusConcluido = configs.statusStory.find(s => s.name.toLowerCase() === STATUS_CONCLUIDO_NAME.toLowerCase());
         const doneStatusName = statusConcluido ? statusConcluido.name : STATUS_CONCLUIDO_NAME;
-
         const totalDone = stories.filter(s => s.status === doneStatusName).length;
         const totalPending = stories.length - totalDone;
-
-        return {
-            labels: ['Concluídas', 'Pendentes'],
-            datasets: [{
-                data: [totalDone, totalPending],
-                // Corrigido para Chart.Concluido (sem acento)
-                backgroundColor: [chartColors['Chart.Concluido'], chartColors['Chart.A Fazer']], 
-                hoverOffset: 4
-            }]
-        };
+        return { labels: ['Concluídas', 'Pendentes'], datasets: [{ data: [totalDone, totalPending], backgroundColor: [chartColors['Chart.Concluido'], chartColors['Chart.A Fazer']] }] };
     }
 
-    // Renders the Simple Bar Chart (Total by Area)
     function drawAreaTotalChart() {
         const data = prepareAreaTotalData();
         const ctx = document.getElementById('chart-area-total')?.getContext('2d');
         if (!ctx) return;
-        
-        const chart = new Chart(ctx, {
-            type: 'bar',
-            data: data,
-            options: {
-                responsive: true,
-                maintainAspectRatio: false, // Allows the container to control height
-                plugins: {
-                    legend: { display: false },
-                    title: { display: false }
-                },
-                scales: {
-                    y: { beginAtZero: true, ticks: { precision: 0 } },
-                    x: { grid: { display: false } } // Remove grid lines on X-axis for cleaner look
-                }
-            }
-        });
+        const chart = new Chart(ctx, { type: 'bar', data: data, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } }, x: { grid: { display: false } } } } });
         myCharts.push(chart);
     }
     
-    // Renders the Stacked or Simple Bar Chart (Status by Area)
     function drawAreaStatusChart(selectedStatusName = null) {
-        // Destroy the previous chart
         let existingChartIndex = myCharts.findIndex(c => c.canvas.id === 'chart-area-status');
-        if (existingChartIndex !== -1) {
-            myCharts[existingChartIndex].destroy();
-            myCharts.splice(existingChartIndex, 1);
-        }
-
+        if (existingChartIndex !== -1) { myCharts[existingChartIndex].destroy(); myCharts.splice(existingChartIndex, 1); }
         const chartTitleElement = document.getElementById('area-status-chart-title');
         const areaChartData = prepareAreaStatusData(selectedStatusName);
-
         const ctx = document.getElementById('chart-area-status')?.getContext('2d');
         if (!ctx) return;
-        
         let stacked = true;
-        let data = { labels: areaChartData.labels, datasets: areaChartData.datasets };
-
-        if (selectedStatusName && areaChartData.mode === 'single') {
-            // Single Status Mode
-            if (chartTitleElement) chartTitleElement.textContent = `Contagem de Histórias em: ${selectedStatusName}`;
-            stacked = false;
-            
-        } else {
-            // Default Mode (Stacked)
-            if (chartTitleElement) chartTitleElement.textContent = 'Status por Área';
-            stacked = true;
-        }
-
-        const chart = new Chart(ctx, {
-            type: 'bar',
-            data: data,
-            options: {
-                responsive: true,
-                maintainAspectRatio: false, 
-                plugins: {
-                    title: { display: false } // Title is now in the H3 above
-                },
-                scales: {
-                    x: { stacked: stacked, grid: { display: false } },
-                    y: { stacked: stacked, beginAtZero: true, ticks: { precision: 0 } }
-                }
-            }
-        });
+        if (selectedStatusName && areaChartData.mode === 'single') { if (chartTitleElement) chartTitleElement.textContent = `Contagem em: ${selectedStatusName}`; stacked = false; }
+        else { if (chartTitleElement) chartTitleElement.textContent = 'Status por Área'; stacked = true; }
+        const chart = new Chart(ctx, { type: 'bar', data: { labels: areaChartData.labels, datasets: areaChartData.datasets }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: stacked, grid: { display: false } }, y: { stacked: stacked, beginAtZero: true, ticks: { precision: 0 } } } } });
         myCharts.push(chart);
     }
     
-    // Renders the PO by Status Chart (Now with dynamic filter)
     function drawPOStatusChart(selectedPoName = null) {
-        // Search for an existing chart with the same ID and destroy it to prevent overlay
         let existingChartIndex = myCharts.findIndex(c => c.canvas.id === 'chart-po-status');
-        if (existingChartIndex !== -1) {
-            myCharts[existingChartIndex].destroy();
-            myCharts.splice(existingChartIndex, 1);
-        }
-        
+        if (existingChartIndex !== -1) { myCharts[existingChartIndex].destroy(); myCharts.splice(existingChartIndex, 1); }
         const chartTitleElement = document.getElementById('po-status-chart-title');
-        
-        let chartType = 'bar';
-        let indexAxis = 'y'; // Default for horizontal (All POs)
-        let stacked = true;
-        let plugins = { title: { display: false }, legend: { position: 'right' } };
-
         const poChartData = preparePOStatusData(selectedPoName);
         const ctx = document.getElementById('chart-po-status')?.getContext('2d');
         if (!ctx) return;
-        
-        let data;
-
-        if (selectedPoName && poChartData.mode === 'single') {
-            // Single PO Mode (Status by PO)
-            if (chartTitleElement) chartTitleElement.textContent = `Status das Histórias de ${selectedPoName}`;
-            indexAxis = 'x'; // Change to vertical
-            stacked = false;
-            plugins.legend = { display: false };
-            
-            data = {
-                labels: poChartData.labels,
-                datasets: [{
-                    label: 'Contagem de Histórias',
-                    data: poChartData.data,
-                    backgroundColor: poChartData.labels.map(status => chartColors[status] || chartColors['Geral']),
-                }]
-            };
-
-        } else {
-            // Default Mode (All POs by Status - Stacked Horizontal)
-            if (chartTitleElement) chartTitleElement.textContent = 'Status por Product Owner';
-            data = { labels: poChartData.labels, datasets: poChartData.datasets };
-            plugins.legend = { position: 'bottom' }; // Move a legenda para baixo para otimizar espaço lateral
-        }
-
-        const chart = new Chart(ctx, {
-            type: chartType,
-            data: data,
-            options: {
-                indexAxis: indexAxis,
-                responsive: true,
-                maintainAspectRatio: false, // Allows the container to control height
-                plugins: plugins,
-                scales: {
-                    x: { 
-                        stacked: stacked, 
-                        beginAtZero: true, 
-                        ticks: { precision: 0 },
-                        // Adjust X-axis title dynamically
-                        title: { display: indexAxis === 'x', text: 'Contagem de Histórias' },
-                        grid: { display: indexAxis === 'x' } // Show grid lines only on the value axis
-                    },
-                    y: { 
-                        stacked: stacked,
-                        // Adjust Y-axis title dynamically
-                        title: { display: indexAxis === 'y', text: 'Product Owner' },
-                        grid: { display: indexAxis === 'y' } // Show grid lines only on the value axis
-                    }
-                }
-            }
-        });
+        let data, indexAxis = 'y', stacked = true, legendPos = 'bottom';
+        if (selectedPoName && poChartData.mode === 'single') { if (chartTitleElement) chartTitleElement.textContent = `Status de ${selectedPoName}`; indexAxis = 'x'; stacked = false; data = { labels: poChartData.labels, datasets: [{ data: poChartData.data, backgroundColor: poChartData.labels.map(s => chartColors[s] || chartColors['Geral']) }] }; }
+        else { if (chartTitleElement) chartTitleElement.textContent = 'Status por PO'; data = { labels: poChartData.labels, datasets: poChartData.datasets }; }
+        const chart = new Chart(ctx, { type: 'bar', data: data, options: { indexAxis: indexAxis, responsive: true, maintainAspectRatio: false, plugins: { legend: { position: legendPos } }, scales: { x: { stacked: stacked, beginAtZero: true, ticks: { precision: 0 } }, y: { stacked: stacked } } } });
         myCharts.push(chart);
     }
 
-    // Renders the Doughnut Chart (Done vs Pending)
     function drawDonePendingChart() {
-        // Search for an existing chart with the same ID and destroy it to prevent overlay
         let existingChartIndex = myCharts.findIndex(c => c.canvas.id === 'chart-done-pending');
-        if (existingChartIndex !== -1) {
-            myCharts[existingChartIndex].destroy();
-            myCharts.splice(existingChartIndex, 1);
-        }
-        
+        if (existingChartIndex !== -1) { myCharts[existingChartIndex].destroy(); myCharts.splice(existingChartIndex, 1); }
         const data = prepareDonePendingData();
         const ctx = document.getElementById('chart-done-pending')?.getContext('2d');
         if (!ctx) return;
-        
-        const chart = new Chart(ctx, {
-            type: 'doughnut',
-            data: data,
-            options: {
-                responsive: true,
-                maintainAspectRatio: false, // Allows the container to control height
-                plugins: {
-                    legend: { position: 'bottom' },
-                    title: { display: false } // Title is now in the H3 above
-                },
-                cutout: '80%' // Doughnut mais fino
-            }
-        });
+        const chart = new Chart(ctx, { type: 'doughnut', data: data, options: { responsive: true, maintainAspectRatio: false, cutout: '80%' } });
         myCharts.push(chart);
     }
 
     function renderDashboard() {
-        // 1. Clear and destroy old charts (if any)
         destroyCharts();
-
         const summaryContainer = document.getElementById('dashboard-summary');
-        
-        const totalStories = stories.length;
-        // USANDO statusStory
         const statusConcluido = configs.statusStory.find(s => s.name.toLowerCase() === STATUS_CONCLUIDO_NAME.toLowerCase());
         const doneStatusName = statusConcluido ? statusConcluido.name : STATUS_CONCLUIDO_NAME;
-
         const totalDone = stories.filter(s => s.status === doneStatusName).length;
         const highPriority = stories.filter(s => s.priority === 'Alta' && s.status !== doneStatusName).length;
-        
-        // 2. Render Summary Cards (KPIs)
         if (summaryContainer) {
             summaryContainer.innerHTML = `
-                <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-indigo-600 hover:shadow-xl transition duration-300">
-                    <p class="text-sm font-medium text-gray-500">Total de Histórias</p>
-                    <p class="text-4xl font-extrabold text-gray-900 mt-2">${totalStories}</p>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-green-600 hover:shadow-xl transition duration-300">
-                    <p class="text-sm font-medium text-gray-500">Histórias Concluídas</p>
-                    <p class="text-4xl font-extrabold text-gray-900 mt-2">${totalDone} 
-                        <span class="text-base font-semibold text-gray-500 ml-2">(${totalStories > 0 ? ((totalDone / totalStories) * 100).toFixed(0) : 0}%)</span>
-                    </p>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-red-600 hover:shadow-xl transition duration-300">
-                    <p class="text-sm font-medium text-gray-500">Prioridade Alta (Pendentes)</p>
-                    <p class="text-4xl font-extrabold text-gray-900 mt-2">${highPriority}</p>
-                </div>
-            `;
+                <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-indigo-600"><p class="text-sm font-medium text-gray-500">Total de Histórias</p><p class="text-4xl font-extrabold text-gray-900 mt-2">${stories.length}</p></div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-green-600"><p class="text-sm font-medium text-gray-500">Histórias Concluídas</p><p class="text-4xl font-extrabold text-gray-900 mt-2">${totalDone} <span class="text-base text-gray-500">(${stories.length > 0 ? ((totalDone/stories.length)*100).toFixed(0) : 0}%)</span></p></div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-red-600"><p class="text-sm font-medium text-gray-500">Prioridade Alta (Pendentes)</p><p class="text-4xl font-extrabold text-gray-900 mt-2">${highPriority}</p></div>`;
         }
-
-        // 3. Populate filters before drawing dynamic charts (FIX)
         populateDashboardPoFilter();
         populateDashboardStatusFilter();
-        
-        // 4. Draw Charts
-        drawDonePendingChart(); 
-        drawAreaTotalChart();   
-        
-        // Gets initial values from newly populated filters
-        const initialPo = document.getElementById('filter-dashboard-po')?.value || null;
-        const initialStatus = document.getElementById('filter-dashboard-status')?.value || null;
-        
-        drawPOStatusChart(initialPo);    
-        drawAreaStatusChart(initialStatus); 
+        drawDonePendingChart(); drawAreaTotalChart();
+        drawPOStatusChart(document.getElementById('filter-dashboard-po')?.value);    
+        drawAreaStatusChart(document.getElementById('filter-dashboard-status')?.value); 
     }
 
-
     // === CONFIGURATION FUNCTIONS ===
-    
-    // Define quais tipos de configuração pertencem a cada grupo
-    const CONFIG_GROUPS = {
-        features: ['directorate', 'po', 'statusFeature'], // Configs for features and shared items
-        stories: ['area', 'statusStory'], 
-        tasks: ['system', 'techlead', 'statusTask'] 
-    };
+    const CONFIG_GROUPS = { features: ['directorate', 'po', 'statusFeature'], stories: ['area', 'statusStory'], tasks: ['system', 'techlead', 'statusTask'] };
 
-    // Renders the 3 configuration lists
     function renderConfigLists() {
-        
-        // Define as seções e sua ordem
         const configSections = [
             { id: 'config-feature-general', title: 'Configurações de Feature e Geral', types: CONFIG_GROUPS.features, border: 'border-purple-600', titleColor: 'text-purple-700' },
             { id: 'config-story', title: 'Configurações de Histórias', types: CONFIG_GROUPS.stories, border: 'border-indigo-600', titleColor: 'text-indigo-700' },
             { id: 'config-task', title: 'Configurações de Tarefas', types: CONFIG_GROUPS.tasks, border: 'border-blue-600', titleColor: 'text-blue-700' }
         ];
-        
         const contentArea = document.getElementById('configs-view');
         if (!contentArea) return;
-        
-        // Remove seções dinâmicas anteriores
-        const dynamicContent = contentArea.querySelectorAll('.dynamic-config-section');
-        dynamicContent.forEach(el => el.remove());
-        
+        contentArea.querySelectorAll('.dynamic-config-section').forEach(el => el.remove());
         configSections.forEach(section => {
             const sectionDiv = document.createElement('div');
             sectionDiv.id = section.id;
-            // Ajuste de classes: Sombra e borda mais definidas
-            sectionDiv.className = `dynamic-config-section mb-10 p-4 sm:p-6 bg-white rounded-xl shadow-lg border-t-4 ${section.border}`;
-            sectionDiv.innerHTML = `
-                <h3 class="text-2xl font-semibold mb-6 ${section.titleColor} border-b pb-2">${section.title}</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="${section.id}-grid">
-                </div>
-            `;
-            // Adiciona a seção ao final da view (após os headers estáticos)
+            sectionDiv.className = `dynamic-config-section mb-10 p-6 bg-white rounded-xl shadow-lg border-t-4 ${section.border}`;
+            sectionDiv.innerHTML = `<h3 class="text-2xl font-semibold mb-6 ${section.titleColor} border-b pb-2">${section.title}</h3><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="${section.id}-grid"></div>`;
             contentArea.appendChild(sectionDiv);
-            
-            const gridElement = document.getElementById(`${section.id}-grid`);
-            
             section.types.forEach(type => {
                 const listElement = document.createElement('div');
-                // Changed p-6 to p-4 for better mobile fit
                 listElement.className = 'bg-gray-50 p-4 rounded-xl border';
-                
                 let friendlyTitle = type.charAt(0).toUpperCase() + type.slice(1);
                 if (type === 'po') friendlyTitle = 'Product Owners';
                 else if (type === 'statusStory') friendlyTitle = 'Status de História';
                 else if (type === 'statusTask') friendlyTitle = 'Status de Tarefa';
                 else if (type === 'statusFeature') friendlyTitle = 'Status de Feature';
                 else if (type === 'directorate') friendlyTitle = 'Diretoria';
-                
-                let placeholderText = friendlyTitle.replace(' de ', ' do(a) nova ');
-                if (type === 'po') placeholderText = 'Nome do novo PO';
-                else if (type === 'directorate') placeholderText = 'Nome da nova Diretoria';
-                else if (type === 'statusFeature') placeholderText = 'Nome do novo Status';
-                
-                listElement.innerHTML = `
-                    <h4 class="text-xl font-semibold mb-4 text-gray-800">${friendlyTitle}</h4>
-                    <div id="config-${type}-list" class="space-y-3 mb-4">
-                        </div>
-                    <div class="flex flex-col space-y-3">
-                        <input type="text" id="new-${type}-name" placeholder="${placeholderText}" class="w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                        <button onclick="addConfigItem('${type}')" class="w-full bg-indigo-600 text-white py-2 px-3 rounded-lg hover:bg-indigo-700 transition duration-150 text-sm shadow-sm">Adicionar</button>
-                    </div>
-                `;
-                gridElement.appendChild(listElement);
-            });
-        });
-
-        // Agora, popula as listas internas com os dados existentes
-        const allTypes = Object.values(CONFIG_GROUPS).flat();
-
-        allTypes.forEach(type => { 
-            const listElement = document.getElementById(`config-${type}-list`);
-            if (!listElement) return;
-
-            
-            configs[type].forEach(item => {
-                const statusText = item.isActive ? 'Ativo' : 'Inativo';
-                const toggleClass = item.isActive ? 'bg-indigo-600' : 'bg-gray-300';
-                const translateClass = item.isActive ? 'translate-x-full' : 'translate-x-0';
-
-                const itemDiv = document.createElement('div');
-                // Ajuste de classes: Mais espaçoso e com borda
-                itemDiv.className = 'flex items-center justify-between p-3 bg-white rounded-lg border shadow-sm text-sm';
-                itemDiv.innerHTML = `
-                    <div class="flex-1 mr-4 flex-shrink min-w-0">
-                        <span id="config-name-${type}-${item.id}" class="font-medium text-gray-700 truncate">${item.name}</span>
-                        <span class="text-xs ml-2 ${item.isActive ? 'text-green-600' : 'text-red-600'} font-semibold whitespace-nowrap">(${statusText})</span>
-                    </div>
-                    
-                    <div class="flex items-center space-x-2 flex-shrink-0">
-                        <button onclick="editConfigName('${type}', ${item.id})" title="Editar Nome" class="p-1 rounded-full hover:bg-gray-100 text-blue-500 transition">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                        </button>
-
-                        <button onclick="confirmDeleteConfig('${type}', ${item.id}, '${item.name}')" title="Excluir" class="p-1 rounded-full hover:bg-gray-100 text-red-600 transition">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        </button>
-
-                        <button onclick="toggleConfigActive('${type}', ${item.id})"
-                            class="relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${toggleClass}"
-                            role="switch" aria-checked="${item.isActive}">
-                            <span class="sr-only">Toggle Status</span>
-                            <span aria-hidden="true" class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transform ring-0 transition ease-in-out duration-200 ${translateClass} ${item.isActive ? 'translate-x-5' : 'translate-x-0'}"></span>
-                        </button>
-                    </div>
-                `;
-                listElement.appendChild(itemDiv);
+                listElement.innerHTML = `<h4 class="text-xl font-semibold mb-4 text-gray-800">${friendlyTitle}</h4><div id="config-${type}-list" class="space-y-3 mb-4"></div><div class="flex flex-col space-y-3"><input type="text" id="new-${type}-name" placeholder="Novo item" class="w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm"><button onclick="addConfigItem('${type}')" class="w-full bg-indigo-600 text-white py-2 px-3 rounded-lg hover:bg-indigo-700 transition duration-150 text-sm shadow-sm">Adicionar</button></div>`;
+                document.getElementById(`${section.id}-grid`).appendChild(listElement);
+                const itemList = document.getElementById(`config-${type}-list`);
+                configs[type].forEach(item => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'flex items-center justify-between p-3 bg-white rounded-lg border shadow-sm text-sm';
+                    itemDiv.innerHTML = `<div class="flex-1 mr-4 flex-shrink min-w-0"><span id="config-name-${type}-${item.id}" class="font-medium text-gray-700 truncate">${item.name}</span> <span class="text-xs ${item.isActive ? 'text-green-600' : 'text-red-600'}">(${item.isActive ? 'Ativo' : 'Inativo'})</span></div><div class="flex items-center space-x-2"><button onclick="editConfigName('${type}', ${item.id})" class="text-blue-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button><button onclick="confirmDeleteConfig('${type}', ${item.id}, '${item.name}')" class="text-red-600"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button><button onclick="toggleConfigActive('${type}', ${item.id})" class="w-10 h-5 rounded-full ${item.isActive ? 'bg-indigo-600' : 'bg-gray-300'} relative transition"><span class="absolute w-4 h-4 bg-white rounded-full top-0.5 transition ${item.isActive ? 'right-0.5' : 'left-0.5'}"></span></button></div>`;
+                    itemList.appendChild(itemDiv);
+                });
             });
         });
     }
 
-    // Adds a new configuration item (Area, PO, Status)
     function addConfigItem(type) {
-        const inputId = `new-${type}-name`;
-        const inputElement = document.getElementById(inputId);
-        if (!inputElement) return;
-
-        const name = inputElement.value.trim();
-
-        if (name === "") {
-            showModal("Erro", "O nome do item de configuração não pode ser vazio.", `<button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">OK</button>`);
-            return;
-        }
-
-        if (configs[type].some(item => item.name.toLowerCase() === name.toLowerCase())) {
-            showModal("Erro", `O nome "${name}" já existe em ${type}.`, `<button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">OK</button>`);
-            return;
-        }
-
-        configs[type].push({
-            id: generateId(),
-            name: name,
-            isActive: true
-        });
-
-        inputElement.value = '';
-        saveConfigs();
-        renderConfigLists();
-        
-        // Re-popula selects afetados pela nova configuração
-        if (currentView === 'stories') {
-            populateSelects();
-            populateStoryFeatureSelect();
-        }
-        if (currentView === 'feature') {
-            populateFeatureSelects();
-        }
-        if (document.getElementById('task-modal')?.classList.contains('hidden') === false) populateTaskSelects();
-        
-        showModal("Sucesso", `${name} adicionado(a) com sucesso em ${type}.`, `<button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">OK</button>`);
+        const input = document.getElementById(`new-${type}-name`);
+        const name = input.value.trim();
+        if (!name) return;
+        if (configs[type].some(i => i.name.toLowerCase() === name.toLowerCase())) return;
+        configs[type].push({ id: generateId(), name: name, isActive: true });
+        input.value = ''; saveConfigs(); renderConfigLists(); populateSelects(); populateFeatureSelects(); populateTaskSelects();
     }
 
-    // Edits the name of a configuration item
     function editConfigName(type, id) {
         const item = configs[type].find(c => c.id === id);
-        if (!item) return;
-
-        const nameElement = document.getElementById(`config-name-${type}-${id}`);
-        if (!nameElement) return;
-        
-        const currentName = item.name;
-
-        // Replace the text with an input field
-        nameElement.outerHTML = `<input type="text" id="edit-input-${id}" value="${currentName}" class="p-1 border rounded-lg focus:ring-indigo-500 focus:border-indigo-500 text-sm" onblur="saveEditedConfigName('${type}', ${id}, this.value, '${currentName}')" onkeypress="if(event.key === 'Enter') this.blur()">`;
-
-        document.getElementById(`edit-input-${id}`)?.focus();
+        const el = document.getElementById(`config-name-${type}-${id}`);
+        if (item && el) {
+            el.outerHTML = `<input type="text" id="edit-${id}" value="${item.name}" class="border rounded px-1 w-full" onblur="saveEditedConfigName('${type}', ${id}, this.value, '${item.name}')">`;
+            document.getElementById(`edit-${id}`).focus();
+        }
     }
 
-    // Saves the edited name
     function saveEditedConfigName(type, id, newName, oldName) {
-        const trimmedName = newName.trim();
         const item = configs[type].find(c => c.id === id);
-        const inputElement = document.getElementById(`edit-input-${id}`);
-        
-        if (!item || !inputElement) return;
-
-        if (trimmedName === '' || trimmedName === oldName) {
-            // If empty or unchanged, revert to the original span
-            inputElement.outerHTML = `<span id="config-name-${type}-${id}" class="font-medium text-gray-700 truncate">${item.name}</span>`;
-            return;
-        }
-
-        if (configs[type].some(c => c.name.toLowerCase() === trimmedName.toLowerCase() && c.id !== id)) {
-            showModal("Erro de Edição", "Este nome já está em uso. Por favor, escolha outro.", `<button onclick="closeModal(); renderConfigLists();" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">OK</button>`);
-            return;
-        }
-
-        // Update the name and save
-        item.name = trimmedName;
-        
-        // Update models that use the old name
-        stories.forEach(story => {
-            if (type === 'area' && story.area === oldName) {
-                story.area = trimmedName;
-            } else if (type === 'po' && story.po === oldName) {
-                story.po = trimmedName;
-            } else if (type === 'statusStory' && story.status === oldName) { 
-                story.status = trimmedName;
-            }
-        });
-        
-        features.forEach(feature => {
-             if (type === 'directorate' && feature.directorate === oldName) {
-                feature.directorate = trimmedName;
-            } else if (type === 'po' && feature.po === oldName) {
-                feature.po = trimmedName;
-            } else if (type === 'statusFeature' && feature.status === oldName) {
-                feature.status = trimmedName;
-            }
-        });
-
-        tasks.forEach(task => {
-            if (type === 'system' && task.system === oldName) {
-                task.system = trimmedName;
-            } else if (type === 'techlead' && task.techlead === oldName) {
-                task.techlead = trimmedName;
-            } else if (type === 'statusTask' && task.status === oldName) { 
-                task.status = trimmedName;
-            }
-        });
-        
-        // Força a atualização do Firebase também
-        // Embora os objetos já tenham sido atualizados na memória, precisamos enviar a mudança.
-        // O ideal seria fazer um endpoint para mudar o nome em massa no banco.
-        // Aqui, salvaremos toda a coleção de volta localmente (fallback) ou faremos um reload (se firestore exist).
-        saveFeatures();
-        saveStories();
-        saveTasks();
-        saveConfigs();
-        
-        // Revert to the updated span
-        inputElement.outerHTML = `<span id="config-name-${type}-${id}" class="font-medium text-gray-700 truncate">${item.name}</span>`;
-        
-        // Re-render everything to update dropdowns/views
-        renderConfigLists();
-        updateAllViews();
-        if (currentView === 'stories') {
-            populateSelects();
-            populateStoryFeatureSelect();
-        }
-        if (currentView === 'feature') {
-            populateFeatureSelects();
-        }
-        if (document.getElementById('task-modal')?.classList.contains('hidden') === false) populateTaskSelects();
+        if (item && newName.trim() && newName !== oldName) {
+            item.name = newName.trim();
+            stories.forEach(s => { if (type === 'area' && s.area === oldName) s.area = item.name; if (type === 'po' && s.po === oldName) s.po = item.name; });
+            saveConfigs(); renderConfigLists(); updateAllViews();
+        } else { renderConfigLists(); }
     }
 
-
-    // Toggles the active status of a configuration item
     function toggleConfigActive(type, id) {
         const item = configs[type].find(c => c.id === id);
-        if (item) {
-            item.isActive = !item.isActive;
-            saveConfigs();
-            renderConfigLists();
-            // Update affected views
-            updateAllViews();
-            if (currentView === 'stories') {
-                populateSelects();
-                populateStoryFeatureSelect();
-            }
-            if (currentView === 'feature') {
-                populateFeatureSelects();
-            }
-            if (document.getElementById('task-modal')?.classList.contains('hidden') === false) populateTaskSelects();
-        }
+        if (item) { item.isActive = !item.isActive; saveConfigs(); renderConfigLists(); updateAllViews(); }
     }
 
-    // Deletes a configuration item
     function deleteConfigItem(type, id) {
-        const item = configs[type].find(c => c.id === id);
-        if (!item) return;
-
-        let itemsInUse = 0;
-        // Checagem nas histórias
-        if (type === 'area') {
-            itemsInUse += stories.filter(s => s.area === item.name).length;
-        } else if (type === 'po') {
-            itemsInUse += stories.filter(s => s.po === item.name).length;
-            itemsInUse += features.filter(f => f.po === item.name).length;
-        } else if (type === 'statusStory') { 
-            itemsInUse += stories.filter(s => s.status === item.name).length;
-        }
-        // Checagem nas tasks
-        else if (type === 'statusTask') { 
-            itemsInUse += tasks.filter(t => t.status === item.name).length;
-        } else if (type === 'system') {
-            itemsInUse += tasks.filter(t => t.system === item.name).length;
-        } else if (type === 'techlead') {
-            itemsInUse += tasks.filter(t => t.techlead === item.name).length;
-        }
-        // Checagem nas features
-        else if (type === 'directorate') {
-            itemsInUse += features.filter(f => f.directorate === item.name).length;
-        } else if (type === 'statusFeature') {
-            itemsInUse += features.filter(f => f.status === item.name).length;
-        }
-
-        if (itemsInUse > 0) {
-             showModal("Impossível Excluir", `Não é possível excluir "${item.name}" pois ${itemsInUse} item(s) (Feature/História/Task) ainda o(a) utilizam.`, `<button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">Entendido</button>`);
-            return;
-        }
-
         configs[type] = configs[type].filter(c => c.id !== id);
-        saveConfigs();
-        renderConfigLists();
-        
-        // Re-popula selects após exclusão, caso a view ativa dependa disso
-        updateAllViews();
-         if (currentView === 'stories') {
-            populateSelects();
-            populateStoryFeatureSelect();
-        }
-        if (currentView === 'feature') {
-            populateFeatureSelects();
-        }
-        if (document.getElementById('task-modal')?.classList.contains('hidden') === false) populateTaskSelects();
+        saveConfigs(); renderConfigLists(); updateAllViews();
     }
 
-    // === EXPORT FUNCTION (CSV/Excel) ===
-
-    /**
-     * Exports data to a CSV file. The exported data depends on the 'type' parameter.
-     * @param {'stories'|'tasks'|'features'} type The type of data to export.
-     */
+    // === EXPORT FUNCTION ===
     function exportDataToExcel(type) {
-        let dataToExport = [];
-        let headers = [];
-        let filenamePrefix = '';
-
-        // 1. Determine data and headers based on type
-        if (type === 'stories') {
-            // Use filtered stories (same logic as renderStories)
-            const filterArea = document.getElementById('filter-area')?.value;
-            const filterPo = document.getElementById('filter-po')?.value;
-            const filterStatus = document.getElementById('filter-status')?.value;
-            const filterPriority = document.getElementById('filter-priority')?.value;
-            const filterCompletionStatus = document.getElementById('filter-completion-status')?.value;
-
-            dataToExport = stories.filter(story => {
-                const passesArea = !filterArea || story.area === filterArea;
-                const passesPo = !filterPo || story.po === filterPo;
-                const passesStatus = !filterStatus || story.status === filterStatus;
-                const passesPriority = !filterPriority || story.priority === filterPriority;
-                
-                const completionStatus = getStoryCompletionStatus(story.id);
-                let passesCompletion = true;
-                
-                if (filterCompletionStatus === 'pending') {
-                    passesCompletion = completionStatus.pending > 0;
-                } else if (filterCompletionStatus === 'done') {
-                    passesCompletion = completionStatus.percentage === 100 && completionStatus.total > 0;
-                } else if (filterCompletionStatus === 'no_tasks') {
-                    passesCompletion = completionStatus.total === 0;
-                }
-
-                return passesArea && passesPo && passesStatus && passesPriority && passesCompletion;
-            });
-
-            // ATUALIZADO: Adicionando "ID Feature" no cabeçalho
-            headers = ["ID", "ID Externo", "Tipo", "Título", "Descrição", "Link Externo", "ID Feature Associada", "Área", "Product Owner", "Status (História)", "Prioridade", "Data de Inclusão", "Solicitante", "Tasks Concluídas", "Total Tasks", "Última Atualização"]; 
-            filenamePrefix = 'historias_';
-        
-        } else if (type === 'tasks') {
-            // Export all tasks associated with the CURRENTLY VIEWED story
-            // Recupera o storyId do atributo data-story-id do modal de tasks, se ele estiver aberto
-            const currentStoryId = parseInt(document.getElementById('task-list-modal').getAttribute('data-story-id') || 0);
-
-            if (currentStoryId === 0) {
-                 showModal("Erro de Exportação", "Não foi possível identificar a História para exportar as tarefas.", `<button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">OK</button>`);
-                return;
-            }
-
-            dataToExport = tasks.filter(t => t.storyId === currentStoryId);
-            
-            headers = ["ID Task", "ID Story (Interno)", "ID Externo Task", "Título Task", "Sistema", "Tech Lead", "Status (Tarefa)", "GMUD ID", "Link GMUD", "Data de Criação"]; 
-            filenamePrefix = `tasks_story_${currentStoryId}_`;
-
-        } else if (type === 'features') {
-            // Exportando Features (usando a lista filtrada atual)
-            
-            // Apply filters for features if available, otherwise export all.
-            const filterDirectorate = document.getElementById('filter-feature-directorate')?.value;
-            const filterPo = document.getElementById('filter-feature-po')?.value;
-            const filterStatus = document.getElementById('filter-feature-status')?.value;
-
-            dataToExport = features.filter(feature => {
-                const passesDirectorate = !filterDirectorate || feature.directorate === filterDirectorate;
-                const passesPo = !filterPo || feature.po === filterPo;
-                const passesStatus = !filterStatus || feature.status === filterStatus;
-                return passesDirectorate && passesPo && passesStatus;
-            });
-
-            // ATUALIZADO: Adicionando colunas de Histórias associadas no cabeçalho
-            headers = ["ID", "ID Externo", "Título", "Descrição", "Diretoria", "Product Owner", "Status (Feature)", "Histórias Associadas (IDs)", "Histórias Concluídas", "Total Histórias", "Data de Criação", "Última Atualização"];
-            filenamePrefix = 'features_';
-
-        } else {
-            showModal("Erro de Exportação", "Tipo de exportação desconhecido.", `<button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">OK</button>`);
-            return;
-        }
-
-        // 2. Check for empty data
-        if (dataToExport.length === 0) {
-            showModal("Exportação Vazia", "Não há dados para exportar com os filtros atuais.", `<button onclick="closeModal()" class=\"px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700\">OK</button>`);
-            return;
-        }
-
-        // 3. Create CSV rows
-        const csvRows = [];
-        csvRows.push(headers.join(';')); // Add header
-
-        const cleanAndQuote = (str) => {
-            if (str === undefined || str === null) return '';
-            return `"${String(str).replace(/"/g, '""').replace(/\r?\n|\r/g, ' ')}"`; 
-        }
-
-        dataToExport.forEach(item => {
-            let values = [];
-
-            if (type === 'stories') {
-                const completionStatus = getStoryCompletionStatus(item.id);
-                values = [
-                    item.id,
-                    cleanAndQuote(item.externalId || ''), 
-                    cleanAndQuote(item.type || 'História'), 
-                    cleanAndQuote(item.title), 
-                    cleanAndQuote(item.description), 
-                    cleanAndQuote(item.externalLink || ''), 
-                    cleanAndQuote(item.featureId || ''), // NOVO: ID Feature Associada
-                    cleanAndQuote(item.area),
-                    cleanAndQuote(item.po),
-                    cleanAndQuote(item.status), 
-                    cleanAndQuote(item.priority),
-                    cleanAndQuote(item.requestedDate), 
-                    cleanAndQuote(item.requesterName), 
-                    completionStatus.done, 
-                    completionStatus.total, 
-                    cleanAndQuote(new Date(item.updatedAt).toLocaleDateString('pt-BR'))
-                ];
-            } else if (type === 'tasks') {
-                 values = [
-                    item.id,
-                    item.storyId,
-                    cleanAndQuote(item.externalId || ''), 
-                    cleanAndQuote(item.title),
-                    cleanAndQuote(item.system), 
-                    cleanAndQuote(item.techlead), 
-                    cleanAndQuote(item.status), 
-                    cleanAndQuote(item.gmudId || ''),      
-                    cleanAndQuote(item.gmudLink || ''),    
-                    cleanAndQuote(new Date(item.createdAt).toLocaleDateString('pt-BR'))
-                ];
-            } else if (type === 'features') {
-                const progress = getFeatureStoryProgress(item.id);
-                // Obtém a lista de IDs de histórias associadas
-                const associatedStoryIds = stories.filter(s => s.featureId === item.id).map(s => s.id).join(', ');
-
-                values = [
-                    item.id,
-                    cleanAndQuote(item.externalId || ''),
-                    cleanAndQuote(item.title),
-                    cleanAndQuote(item.description || ''),
-                    cleanAndQuote(item.directorate),
-                    cleanAndQuote(item.po),
-                    cleanAndQuote(item.status),
-                    cleanAndQuote(associatedStoryIds), // NOVO: Histórias Associadas (IDs)
-                    progress.done, 
-                    progress.total, 
-                    cleanAndQuote(new Date(item.createdAt).toLocaleDateString('pt-BR')),
-                    cleanAndQuote(new Date(item.updatedAt).toLocaleDateString('pt-BR'))
-                ];
-            }
-            csvRows.push(values.join(';'));
-        });
-
-        // 4. Create the Blob and download link
-        const bom = '\uFEFF'; // Adiciona o Byte Order Mark (BOM) para forçar o UTF-8 no Excel
-        const csvString = csvRows.join('\n');
-        // O Blob agora contém o BOM e o CSV, garantindo a codificação UTF-8
-        const blob = new Blob([bom, csvString], { type: 'text/csv;charset=utf-8;' });
+        let data = [], headers = [], prefix = '';
+        if (type === 'stories') { data = stories; headers = ["ID", "Título", "Área", "PO", "Status", "Prioridade"]; prefix = 'historias_'; }
+        else if (type === 'features') { data = features; headers = ["ID", "Título", "PO", "Status"]; prefix = 'features_'; }
+        if (data.length === 0) return;
+        const csv = [headers.join(';'), ...data.map(i => [i.id, i.title, i.area || i.directorate, i.po, i.status].join(';'))].join('\n');
+        const blob = new Blob(['\uFEFF', csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
-        
-        // Create file name
-        const filename = `${filenamePrefix}${new Date().toISOString().slice(0, 10)}.csv`;
-
-        if (link.download !== undefined) { 
-            // Modern browsers
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', filename);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            showModal("Exportação Concluída", `O arquivo "${filename}" foi baixado com sucesso.`, `<button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">Fechar</button>`);
-        } else {
-            // Fallback for old browsers (not supported in all)
-            showModal("Erro de Exportação", "Seu navegador não suporta download automático de arquivos CSV.", `<button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">Fechar</button>`);
-        }
+        link.href = URL.createObjectURL(blob);
+        link.download = `${prefix}${new Date().toISOString().slice(0,10)}.csv`;
+        link.click();
     }
 
-
-    // === APPLICATION INITIALIZATION ===
     window.onload = function() {
-        // 1. Load data from localStorage (only configs now)
         loadData();
-
-        // 2. Set listeners for Priority filters
         document.getElementById('filter-priority').onchange = renderStories;
-        
-        // 3. Show the initial view (Dashboard)
-        // O loadAllData() no bloco type="module" irá recarregar os dados e chamar renderDashboard
-        // A função showView inicial abaixo só garante que a view de Dashboard está visível
         showView('dashboard');
     };
     
-    // CORRIGIDO: Expondo as funções de renderização para o bloco type="module"
     window.renderFeatures = renderFeatures;
     window.renderStories = renderStories;
     window.renderTasksInModal = renderTasksInModal;
@@ -4031,10 +2430,10 @@
 </script>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
   import {
     getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc
-  } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+  } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDU3nmuB6kOiVAxuqTdpzOUjtzhVtj1sBg",
@@ -4049,132 +2448,79 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  window._fs = { db };
-
-  // Referências aos arrays globais para que as funções de carregamento possam atualizá-los
-  const globalFeatures = window.features;
-  const globalStories = window.stories;
-  const globalTasks = window.tasks;
-
-
-  // Mapeia os documentos para objetos e anexa o _docId (ID do documento Firebase)
   function docToObj(docSnap) {
     const data = docSnap.data();
     return { _docId: docSnap.id, ...data };
   }
 
-  // CORRIGIDO: Função para carregar Features
   async function loadFeatures() {
     try {
         const snap = await getDocs(collection(db, 'features'));
-        // ATUALIZADO: Substitui o array global
-        window.features.length = 0; // Limpa o array global sem reatribuir
-        snap.docs.map(docToObj).forEach(item => window.features.push(item));
-        
-        if (typeof window.renderFeatures === "function") window.renderFeatures();
-        if (typeof window.updateDashboard === "function") window.updateDashboard();
-
+        if (window.features) {
+            window.features.length = 0;
+            snap.docs.map(docToObj).forEach(item => window.features.push(item));
+            if (typeof window.renderFeatures === "function") window.renderFeatures();
+            if (typeof window.updateDashboard === "function") window.updateDashboard();
+        }
     } catch (e) { console.error("Erro ao carregar features:", e); }
   }
 
-  // CORRIGIDO: Função para carregar Stories
   async function loadStories() {
     try {
         const snap = await getDocs(collection(db, 'stories'));
-        // ATUALIZADO: Substitui o array global
-        window.stories.length = 0; // Limpa o array global sem reatribuir
-        snap.docs.map(docToObj).forEach(item => window.stories.push(item));
-        
-        if (typeof window.renderStories === "function") window.renderStories();
-        if (typeof window.updateDashboard === "function") window.updateDashboard();
-        if (typeof window.populateStoryFeatureSelect === "function") window.populateStoryFeatureSelect();
-
+        if (window.stories) {
+            window.stories.length = 0;
+            snap.docs.map(docToObj).forEach(item => window.stories.push(item));
+            if (typeof window.renderStories === "function") window.renderStories();
+            if (typeof window.updateDashboard === "function") window.updateDashboard();
+            if (typeof window.populateStoryFeatureSelect === "function") window.populateStoryFeatureSelect();
+        }
     } catch (e) { console.error("Erro ao carregar stories:", e); }
   }
 
-  // CORRIGIDO: Função para carregar Tasks
   async function loadTasks() {
     try {
         const snap = await getDocs(collection(db, 'tasks'));
-        // ATUALIZADO: Substitui o array global
-        window.tasks.length = 0; // Limpa o array global sem reatribuir
-        snap.docs.map(docToObj).forEach(item => window.tasks.push(item));
-
-        if (typeof window.renderTasksInModal === "function" && window._lastTaskModalStoryId) {
-            window.renderTasksInModal(window._lastTaskModalStoryId);
+        if (window.tasks) {
+            window.tasks.length = 0;
+            snap.docs.map(docToObj).forEach(item => window.tasks.push(item));
+            if (typeof window.renderTasksInModal === "function" && window._lastTaskModalStoryId) {
+                window.renderTasksInModal(window._lastTaskModalStoryId);
+            }
+            if (typeof window.renderStories === "function") window.renderStories();
         }
-        if (typeof window.renderStories === "function") window.renderStories(); // Para atualizar o progresso nas histórias
-
     } catch (e) { console.error("Erro ao carregar tasks:", e); }
   }
 
-  // CORRIGIDO: Função para carregar TUDO e forçar renderização do dashboard
   async function loadAllData() {
     await Promise.all([loadFeatures(), loadStories(), loadTasks()]);
     if (typeof window.updateDashboard === "function") window.updateDashboard();
   }
 
-  // CORRIGIDO: Função para salvar/atualizar Feature
   async function saveFeature(feature) {
     const { _docId, ...payload } = feature;
-    if (_docId) {
-      // Edição: Usa o _docId para referenciar o documento
-      const docRef = doc(db, 'features', _docId);
-      await updateDoc(docRef, payload);
-    } else {
-      // Criação: Adiciona um novo documento
-      const col = collection(db, 'features');
-      await addDoc(col, payload);
-    }
-    await loadFeatures(); // Recarrega os dados após a operação
-  }
-
-  // CORRIGIDO: Função para salvar/atualizar Story
-  async function saveStory(story) {
-    const { _docId, ...payload } = story;
-    if (_docId) {
-      const docRef = doc(db, 'stories', _docId);
-      await updateDoc(docRef, payload);
-    } else {
-      const col = collection(db, 'stories');
-      await addDoc(col, payload);
-    }
-    await loadStories(); // Recarrega os dados após a operação
-  }
-
-  // CORRIGIDO: Função para salvar/atualizar Task
-  async function saveTask(task) {
-    const { _docId, ...payload } = task;
-    if (_docId) {
-      const docRef = doc(db, 'tasks', _docId);
-      await updateDoc(docRef, payload);
-    } else {
-      const col = collection(db, 'tasks');
-      await addDoc(col, payload);
-    }
-    await loadTasks(); // Recarrega os dados após a operação
-  }
-
-  // CORRIGIDO: Funções de deleção que usam o _docId
-  async function deleteFeatureByDocId(docId) {
-    await deleteDoc(doc(db, 'features', docId));
+    if (_docId) { await updateDoc(doc(db, 'features', _docId), payload); } else { await addDoc(collection(db, 'features'), payload); }
     await loadFeatures();
   }
 
-  async function deleteStoryByDocId(docId) {
-    await deleteDoc(doc(db, 'stories', docId));
+  async function saveStory(story) {
+    const { _docId, ...payload } = story;
+    if (_docId) { await updateDoc(doc(db, 'stories', _docId), payload); } else { await addDoc(collection(db, 'stories'), payload); }
     await loadStories();
   }
 
-  async function deleteTaskByDocId(docId) {
-    await deleteDoc(doc(db, 'tasks', docId));
+  async function saveTask(task) {
+    const { _docId, ...payload } = task;
+    if (_docId) { await updateDoc(doc(db, 'tasks', _docId), payload); } else { await addDoc(collection(db, 'tasks'), payload); }
     await loadTasks();
   }
 
-  // ATUALIZADO: Exporta as funções para a janela global
+  async function deleteFeatureByDocId(docId) { await deleteDoc(doc(db, 'features', docId)); await loadFeatures(); }
+  async function deleteStoryByDocId(docId) { await deleteDoc(doc(db, 'stories', docId)); await loadStories(); }
+  async function deleteTaskByDocId(docId) { await deleteDoc(doc(db, 'tasks', docId)); await loadTasks(); }
+
   window.firestone = {
-    loadAllData,
-    loadFeatures, loadStories, loadTasks,
+    loadAllData, loadFeatures, loadStories, loadTasks,
     saveFeature, saveStory, saveTask,
     deleteFeatureByDocId, deleteStoryByDocId, deleteTaskByDocId
   };
@@ -4182,12 +2528,9 @@
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
     setTimeout(() => { loadAllData(); }, 300);
   } else {
-    window.addEventListener('DOMContentLoaded', () => {
-      setTimeout(() => { loadAllData(); }, 300);
-    });
+    window.addEventListener('DOMContentLoaded', () => { setTimeout(() => { loadAllData(); }, 300); });
   }
 </script>
-
 
 </body>
 </html>
