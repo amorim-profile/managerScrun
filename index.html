@@ -8,999 +8,847 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        
+        :root {
+            --bg-main: #f8fafc;
+            --sidebar-bg: #0f172a;
+        }
+
         body { 
             font-family: 'Inter', sans-serif; 
-            background-color: #f7f9fc; 
+            background-color: var(--bg-main); 
+            color: #1e293b;
         }
+
+        /* Scrollbar customizada */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
         .chart-container {
             position: relative;
             height: 280px; 
             width: 100%;
         }
+
         .view {
-            min-height: 100vh; 
-            background-color: #f7f9fc; 
+            animation: fadeIn 0.3s ease-in-out;
         }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .completion-bar {
             width: 100%;
             height: 8px; 
-            background-color: #e5e7eb; 
+            background-color: #e2e8f0; 
             border-radius: 9999px; 
             overflow: hidden;
         }
+
         .completion-fill {
             height: 100%;
-            transition: width 0.3s ease;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
         .main-content-wrapper {
-            padding-top: 0;
             height: 100vh;
-            width: 100%;
             overflow-y: auto;
+            scroll-behavior: smooth;
         }
+        
+        /* Sidebar Styles */
         .mobile-nav-overlay {
             position: fixed;
             top: 0;
             left: 0;
             z-index: 50; 
             transform: translateX(-100%);
-            transition: transform 0.3s ease-in-out;
-            width: 75%; 
-            max-width: 300px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 280px;
             height: 100vh;
-            display: flex !important; 
         }
-        .mobile-nav-overlay.open {
-            transform: translateX(0);
+        
+        .mobile-nav-overlay.open { transform: translateX(0); }
+        
+        /* Desktop Sidebar Reset */
+        @media (min-width: 768px) {
+            .mobile-nav-overlay {
+                position: static;
+                transform: translateX(0);
+                width: 280px;
+            }
+            .mobile-header { display: none; }
         }
-        .overlay {
-            position: fixed;
-            inset: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 40;
-            display: none;
-        }
-        .overlay.open {
-            display: block;
-        }
+        
         .nav-btn {
-            border-radius: 0.75rem;
-            padding-top: 0.75rem; 
-            padding-bottom: 0.75rem;
-            transition: background-color 0.15s ease, color 0.15s ease;
+            border-radius: 0.5rem;
+            transition: all 0.2s ease;
+            font-weight: 500;
         }
-        .submenu-btn {
-             padding-top: 0.5rem; 
-             padding-bottom: 0.5rem;
-        }
-        @media (min-width: 768px) {
-            .main-content-wrapper {
-                padding-top: 0; 
-                flex: 1;
-                overflow-y: auto;
-            }
-            #sidebar-menu {
-                 display: flex !important; 
-                 position: static !important; 
-                 transform: none !important; 
-            }
-        }
-        @media (max-width: 767px) {
-             .mobile-header {
-                 display: none; 
-             }
-             #sidebar-menu {
-                display: none;
-             }
-             .flex-1 {
-                overflow-x: hidden;
-            }
-             #sidebar-menu.open {
-                 display: flex !important;
-             }
-        }
-        @media (min-width: 768px) {
-            .sticky-header {
-                position: sticky;
-                top: 0;
-                z-index: 10;
-            }
-        }
-        .priority-badge {
-            border: 1px solid currentColor;
-            opacity: 0.9;
-        }
+
         .status-badge {
-             padding: 0.15rem 0.5rem;
-             font-weight: 600;
-             border-radius: 9999px;
+            padding: 0.25rem 0.75rem;
+            font-weight: 600;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
         }
-        .dense-table td, .dense-table th {
-            padding-top: 0.65rem;
-            padding-bottom: 0.65rem;
+
+        .priority-badge { 
+            border: 1px solid currentColor; 
+            padding: 0.15rem 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        .card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            border: 1px solid #f1f5f9;
+        }
+
+        .dense-table th {
+            background-color: #f8fafc;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            padding: 1rem;
+        }
+
+        .dense-table td {
+            padding: 1rem;
+            font-size: 0.875rem;
+            vertical-align: middle;
+        }
+
+        input, select, textarea {
+            transition: all 0.2s ease;
+            outline: none !important;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: #6366f1 !important;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
         }
     </style>
 </head>
-<body class="min-h-screen">
+<body class="flex flex-col md:flex-row overflow-hidden">
 
-    <div class="flex flex-col md:flex-row min-h-screen">
-        
-        <!-- Sidebar Menu -->
-        <div id="sidebar-menu" class="mobile-nav-overlay md:flex md:w-64 bg-gray-900 flex-col p-4 shadow-xl z-40">
-            <h1 class="text-2xl font-bold text-white mb-8 mt-4 hidden md:block">Scrum Manager</h1>
-            <nav class="flex-1 space-y-2">
-                <button id="nav-dashboard" onclick="showView('dashboard'); toggleMobileMenu(true);"
-                    class="nav-btn flex items-center w-full px-4 text-gray-300 hover:bg-gray-800 transition duration-150">
-                    <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                    <span>Dashboard</span>
-                </button>
+    <!-- Mobile Header -->
+    <header class="mobile-header bg-[#0f172a] text-white p-4 flex justify-between items-center z-50 shadow-md md:hidden">
+        <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+            </div>
+            <span class="font-bold tracking-tight">SCRUM PRO</span>
+        </div>
+        <button onclick="toggleMobileMenu()" class="p-2 hover:bg-white/10 rounded-lg transition">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+        </button>
+    </header>
 
-                <button id="nav-registrar" onclick="toggleSubmenu('registrar')"
-                    class="nav-btn flex items-center justify-between w-full px-4 text-gray-300 hover:bg-gray-800 transition duration-150">
-                    <span class="flex items-center">
-                        <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path></svg>
-                        <span>Registrar</span>
-                    </span>
-                    <svg id="arrow-registrar" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                
-                <div id="submenu-registrar" class="space-y-1 pl-6 hidden">
-                    <button id="nav-feature" onclick="showView('feature'); toggleMobileMenu(true);"
-                        class="submenu-btn flex items-center w-full px-4 text-gray-300 hover:text-white hover:bg-gray-800 transition duration-150 rounded-lg text-sm">
-                        <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2 2m-2-2v4m4-11a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2z"></path></svg>
-                        <span>Features</span>
-                    </button>
-                    <button id="nav-stories" onclick="showView('stories'); toggleMobileMenu(true);"
-                        class="submenu-btn flex items-center w-full px-4 text-gray-300 hover:text-white hover:bg-gray-800 transition duration-150 rounded-lg text-sm">
-                        <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                        <span>Histórias/Tasks</span>
-                    </button>
-                </div>
-                
-                <button id="nav-config-parent" onclick="toggleSubmenu('config-parent')"
-                    class="nav-btn flex items-center justify-between w-full px-4 text-gray-300 hover:bg-gray-800 transition duration-150">
-                    <span class="flex items-center">
-                        <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                        <span>Configurações</span>
-                    </span>
-                    <svg id="arrow-config-parent" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                
-                <div id="submenu-config-parent" class="space-y-1 pl-6 hidden">
-                    <button id="nav-integration" onclick="showView('integration'); toggleMobileMenu(true);"
-                        class="submenu-btn flex items-center w-full px-4 text-gray-300 hover:text-white hover:bg-gray-800 transition duration-150 rounded-lg text-sm">
-                        <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-                        <span>Integração</span>
-                    </button>
-                    <button id="nav-configs" onclick="showView('configs'); toggleMobileMenu(true);"
-                        class="submenu-btn flex items-center w-full px-4 text-gray-300 hover:text-white hover:bg-gray-800 transition duration-150 rounded-lg text-sm">
-                        <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                        <span>Sistema</span>
-                    </button>
-                </div>
-            </nav>
+    <!-- Sidebar Menu -->
+    <aside id="sidebar-menu" class="mobile-nav-overlay md:flex md:w-72 bg-[#0f172a] flex-col p-6 shadow-2xl z-40">
+        <div class="hidden md:flex items-center space-x-3 mb-10 px-2">
+            <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+            </div>
+            <h1 class="text-xl font-black text-white tracking-tight">SCRUM PRO</h1>
+        </div>
+
+        <nav class="flex-1 space-y-1 overflow-y-auto">
+            <button id="nav-dashboard" onclick="showView('dashboard'); toggleMobileMenu(true);"
+                class="nav-btn flex items-center w-full px-4 py-3 text-gray-400 hover:bg-white/5 hover:text-white group">
+                <svg class="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+                <span>Dashboard</span>
+            </button>
+
+            <div class="pt-4 pb-2 px-4">
+                <span class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Gerenciamento</span>
+            </div>
+
+            <button id="nav-registrar" onclick="toggleSubmenu('registrar')"
+                class="nav-btn flex items-center justify-between w-full px-4 py-3 text-gray-400 hover:bg-white/5 hover:text-white">
+                <span class="flex items-center">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    <span>Registrar</span>
+                </span>
+                <svg id="arrow-registrar" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
             
-            <div class="mt-auto pt-4 border-t border-gray-700">
-                <p class="text-xs text-gray-500">
-                    Usuário: <span class="font-mono text-gray-300">low-code-user</span>
-                </p>
+            <div id="submenu-registrar" class="space-y-1 pl-12 hidden">
+                <button id="nav-feature" onclick="showView('feature'); toggleMobileMenu(true);"
+                    class="submenu-btn flex items-center w-full py-2 text-sm text-gray-500 hover:text-white transition">Features</button>
+                <button id="nav-stories" onclick="showView('stories'); toggleMobileMenu(true);"
+                    class="submenu-btn flex items-center w-full py-2 text-sm text-gray-500 hover:text-white transition">Histórias/Tasks</button>
+            </div>
+
+            <button id="nav-config-parent" onclick="toggleSubmenu('config-parent')"
+                class="nav-btn flex items-center justify-between w-full px-4 py-3 text-gray-400 hover:bg-white/5 hover:text-white">
+                <span class="flex items-center">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
+                    <span>Configurações</span>
+                </span>
+                <svg id="arrow-config-parent" class="w-4 h-4 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            </button>
+            
+            <div id="submenu-config-parent" class="space-y-1 pl-12 hidden">
+                <button id="nav-configs" onclick="showView('configs'); toggleMobileMenu(true);"
+                    class="submenu-btn flex items-center w-full py-2 text-sm text-gray-500 hover:text-white transition">Sistema</button>
+            </div>
+        </nav>
+
+        <div class="mt-auto pt-6 border-t border-white/10">
+            <div class="flex items-center space-x-3 px-2">
+                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-[10px] font-bold text-white">LC</div>
+                <div>
+                    <p class="text-xs font-bold text-white">Low Code User</p>
+                    <p class="text-[10px] text-gray-500">Admin Account</p>
+                </div>
             </div>
         </div>
-    
-        <div id="mobile-overlay" class="overlay" onclick="toggleMobileMenu()"></div>
+    </aside>
 
-        <!-- Main Content Area -->
-        <div class="flex-1 main-content-wrapper overflow-y-auto">
+    <div id="mobile-overlay" class="fixed inset-0 bg-black/50 z-40 hidden" onclick="toggleMobileMenu(true)"></div>
 
-            <!-- Task List Modal (Tarefas de uma História) -->
-            <div id="task-list-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
-                <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-4xl mx-4 md:mx-auto max-h-[90vh] overflow-y-auto">
-                    <h3 id="task-modal-list-title" class="text-xl font-bold mb-4 text-gray-800 border-b pb-2">Tarefas da História</h3>
-                    
-                    <div class="overflow-x-auto shadow-md rounded-lg border">
-                        <table class="min-w-full divide-y divide-gray-200 dense-table">
-                            <thead class="bg-gray-100">
-                                <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">ID EXT.</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Título</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Sistema</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Tech Lead</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Status</th>
-                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="task-list-modal-table-body" class="bg-white divide-y divide-gray-100">
-                                </tbody>
-                        </table>
-                        <p id="no-tasks-modal-message" class="text-center text-gray-500 p-6 hidden">Nenhuma tarefa registrada para esta história.</p>
+    <!-- Main Content -->
+    <main class="flex-1 main-content-wrapper bg-[#f8fafc]">
+
+        <!-- Generic Feedback Modal -->
+        <div id="message-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[100] hidden">
+            <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center">
+                <div id="modal-icon" class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <h3 id="modal-title" class="text-xl font-bold text-slate-800 mb-2"></h3>
+                <p id="modal-body" class="text-slate-500 mb-8 leading-relaxed"></p>
+                <div id="modal-actions" class="flex justify-center space-x-3"></div>
+            </div>
+        </div>
+
+        <!-- Dashboard View -->
+        <div id="dashboard-view" class="view p-6 md:p-10 max-w-7xl mx-auto">
+            <header class="mb-10">
+                <h2 class="text-4xl font-black text-slate-900 tracking-tight">Dashboard</h2>
+                <p class="text-slate-500 mt-1 font-medium">Visão geral da saúde e progresso do projeto.</p>
+            </header>
+            
+            <div id="dashboard-summary" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                <!-- Injected via JS -->
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="card p-8">
+                    <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                        <span class="w-2 h-6 bg-indigo-500 rounded-full mr-3"></span>
+                        Status por Product Owner
+                    </h3>
+                    <div class="chart-container"><canvas id="chart-po-status"></canvas></div>
+                </div>
+                <div class="card p-8">
+                    <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                        <span class="w-2 h-6 bg-emerald-500 rounded-full mr-3"></span>
+                        Histórias Concluídas
+                    </h3>
+                    <div class="chart-container"><canvas id="chart-done-pending"></canvas></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features View -->
+        <div id="feature-view" class="view hidden p-6 md:p-10 max-w-7xl mx-auto">
+            <header class="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4">
+                <div>
+                    <h2 class="text-4xl font-black text-slate-900 tracking-tight">Features</h2>
+                    <p class="text-slate-500 mt-1 font-medium">Grandes entregas e iniciativas estratégicas.</p>
+                </div>
+                <button onclick="openFeatureForm()" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-0.5 transition flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                    Nova Feature
+                </button>
+            </header>
+
+            <div id="feature-form-container" class="card p-8 mb-10 hidden border-t-4 border-indigo-600">
+                <form id="feature-form" class="space-y-6">
+                    <input type="hidden" id="feature-id"><input type="hidden" id="feature-doc-id">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-slate-500 uppercase">ID Externo</label>
+                            <input type="number" id="feature-external-id" class="w-full border-2 border-slate-100 p-3 rounded-xl focus:border-indigo-500 bg-slate-50">
+                        </div>
+                        <div class="md:col-span-3 space-y-2">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Título da Feature</label>
+                            <input type="text" id="feature-title" required class="w-full border-2 border-slate-100 p-3 rounded-xl focus:border-indigo-500 bg-slate-50">
+                        </div>
                     </div>
-                    
-                    <div class="flex justify-between pt-6 space-x-3">
-                        <button onclick="exportDataToExcel('tasks')"
-                            class="px-4 py-2 text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 transition duration-150 shadow-md flex items-center space-x-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                            <span>Exportar Tarefas (CSV)</span>
-                        </button>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Diretoria</label>
+                            <select id="feature-directorate" required class="w-full border-2 border-slate-100 p-3 rounded-xl bg-slate-50"></select>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Product Owner</label>
+                            <select id="feature-po" required class="w-full border-2 border-slate-100 p-3 rounded-xl bg-slate-50"></select>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Status</label>
+                            <select id="feature-status" required class="w-full border-2 border-slate-100 p-3 rounded-xl bg-slate-50"></select>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <button type="button" onclick="closeFeatureForm()" class="px-6 py-3 font-bold text-slate-400 hover:text-slate-600 transition">Cancelar</button>
+                        <button type="submit" class="px-8 py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition">Salvar Feature</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card overflow-hidden">
+                <table class="w-full dense-table">
+                    <thead>
+                        <tr>
+                            <th class="w-16"></th>
+                            <th class="text-left">ID Ext</th>
+                            <th class="text-left">Título da Iniciativa</th>
+                            <th class="text-left">PO Responsável</th>
+                            <th class="text-left">Status</th>
+                            <th class="w-20"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="features-table-body" class="divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Stories View -->
+        <div id="stories-view" class="view hidden p-6 md:p-10 max-w-7xl mx-auto">
+            <header class="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4">
+                <div>
+                    <h2 class="text-4xl font-black text-slate-900 tracking-tight">Histórias</h2>
+                    <p class="text-slate-500 mt-1 font-medium">Requisitos detalhados e backlog operacional.</p>
+                </div>
+                <button onclick="openStoryForm()" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+                    Nova História
+                </button>
+            </header>
+            
+            <div id="story-form-container" class="card p-8 mb-10 hidden border-t-4 border-indigo-600">
+                <form id="story-form" class="space-y-6">
+                    <input type="hidden" id="story-id"><input type="hidden" id="story-doc-id">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-slate-500 uppercase">ID Externo</label>
+                            <input type="number" id="story-external-id" class="w-full border-2 border-slate-100 p-3 rounded-xl bg-slate-50">
+                        </div>
+                        <div class="md:col-span-3 space-y-2">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Título da História</label>
+                            <input type="text" id="story-title" required class="w-full border-2 border-slate-100 p-3 rounded-xl bg-slate-50">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Link (Jira/Azure)</label>
+                            <input type="url" id="story-external-link" class="w-full border-2 border-slate-100 p-3 rounded-xl bg-slate-50">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Feature Associada</label>
+                            <select id="story-feature-id" class="w-full border-2 border-slate-100 p-3 rounded-xl bg-slate-50"></select>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-slate-500 uppercase">Descrição</label>
+                        <textarea id="story-description" class="w-full border-2 border-slate-100 p-3 rounded-xl bg-slate-50" rows="3"></textarea>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Inclusão</label>
+                            <input type="date" id="story-requested-date" class="w-full border-2 border-slate-100 p-3 rounded-xl bg-slate-50 text-xs">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Solicitante</label>
+                            <input type="text" id="story-requester-name" class="w-full border-2 border-slate-100 p-3 rounded-xl bg-slate-50">
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Área</label>
+                            <select id="story-area" class="w-full border-2 border-slate-100 p-3 rounded-xl bg-slate-50"></select>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-slate-500 uppercase">PO</label>
+                            <select id="story-po" class="w-full border-2 border-slate-100 p-3 rounded-xl bg-slate-50"></select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Status</label>
+                            <select id="story-status" class="w-full border-2 border-slate-100 p-3 rounded-xl bg-slate-50"></select>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-slate-500 uppercase">Prioridade</label>
+                            <select id="story-priority" class="w-full border-2 border-slate-100 p-3 rounded-xl bg-slate-50">
+                                <option value="Alta">Alta</option><option value="Média">Média</option><option value="Baixa">Baixa</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex flex-col sm:flex-row justify-between items-center pt-6 border-t border-slate-100 gap-4">
+                        <button type="button" id="insert-task-btn" onclick="handleInsertTask()" class="bg-indigo-100 text-indigo-700 px-6 py-3 rounded-xl font-bold hover:bg-indigo-200 transition">Gerenciar Tarefas</button>
                         <div class="flex space-x-3">
-                            <button id="add-task-from-modal-btn" 
-                                class="px-4 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition duration-150 shadow-md flex items-center space-x-1">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                                <span>Nova Tarefa</span>
-                            </button>
-                            <button onclick="closeStoryTasksModal()" class="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-150 shadow-md">Fechar</button>
+                            <button type="button" onclick="closeStoryForm()" class="px-6 py-3 font-bold text-slate-400 transition">Cancelar</button>
+                            <button type="submit" class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition">Salvar Alterações</button>
                         </div>
                     </div>
+                </form>
+            </div>
+
+            <div id="table-action-controls" class="card p-4 mb-6 hidden bg-indigo-600 border-none flex items-center justify-between text-white animate-fadeIn">
+                <div class="flex items-center space-x-4">
+                    <span id="selected-count-message" class="text-sm font-bold opacity-90 tracking-wide"></span>
+                </div>
+                <div class="flex space-x-2">
+                    <button onclick="editSelectedStory()" id="edit-selected-btn" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-xs font-bold transition">Editar</button>
+                    <button onclick="confirmDeleteSelected()" id="delete-selected-btn" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg text-xs font-bold transition">Remover</button>
                 </div>
             </div>
 
-            <!-- Feature Story List Modal -->
-            <div id="feature-story-list-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
-                <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-4xl mx-4 md:mx-auto max-h-[90vh] overflow-y-auto">
-                    <h3 id="feature-story-modal-title" class="text-xl font-bold mb-4 text-gray-800 border-b pb-2">Histórias da Feature</h3>
-                    
-                    <div class="overflow-x-auto shadow-md rounded-lg border">
-                        <table class="min-w-full divide-y divide-gray-200 dense-table">
-                            <thead class="bg-gray-100">
-                                <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">ID EXT..</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Título</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Área / PO</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Status</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Tasks Concluídas</th>
-                                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="feature-story-modal-table-body" class="bg-white divide-y divide-gray-100">
-                                </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="flex justify-end pt-6">
-                        <button onclick="closeFeatureStoriesModal()" class="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-150 shadow-md">Fechar</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Message Modal (Generic feedback) -->
-            <div id="message-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
-                <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-sm">
-                    <h3 id="modal-title" class="text-xl font-bold mb-4 text-gray-800"></h3>
-                    <p id="modal-body" class="mb-6 text-gray-600"></p>
-                    <div id="modal-actions" class="flex justify-end space-x-3">
-                        </div>
-                </div>
-            </div>
-            
-            <!-- Task Create/Edit Modal -->
-            <div id="task-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
-                <div class="bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg mx-4 md:mx-auto"> 
-                    <h3 id="task-modal-title" class="text-lg font-bold mb-4 text-gray-800 border-b pb-2">Inserir Nova Tarefa</h3>
-                    <form id="task-form" class="space-y-4">
-                        <input type="hidden" id="task-story-id">
-                        <input type="hidden" id="task-id"> 
-                        <input type="hidden" id="task-doc-id"> 
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label for="task-external-id" class="block text-sm font-medium text-gray-700">ID Externo</label>
-                                <input type="number" id="task-external-id" min="0" maxlength="10" required
-                                    class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm focus:ring-indigo-500 focus:border-indigo-500" 
-                                    placeholder="1234567890">
-                            </div>
-                            
-                            <div>
-                                <label for="task-gmud-id" class="block text-sm font-medium text-gray-700">ID GMUD</label>
-                                <input type="text" id="task-gmud-id" 
-                                    class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm focus:ring-indigo-500 focus:border-indigo-500" 
-                                    placeholder="GMUD-12345">
-                            </div>
-                        </div>
-                        <div>
-                            <label for="task-title" class="block text-sm font-medium text-gray-700">Título</label>
-                            <input type="text" id="task-title" required 
-                                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                        </div>
-                        
-                        <div>
-                            <label for="task-external-link" class="block text-sm font-medium text-gray-700">Link Externo</label>
-                            <input type="url" id="task-external-link" 
-                                class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                placeholder="https://github.com/pr/123">
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label for="task-system" class="block text-sm font-medium text-gray-700">Sistema</label>
-                                <select id="task-system" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm bg-white focus:ring-indigo-500 focus:border-indigo-500"></select>
-                            </div>
-                            <div>
-                                <label for="task-techlead" class="block text-sm font-medium text-gray-700">Tech Lead</label>
-                                <select id="task-techlead" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm bg-white focus:ring-indigo-500 focus:border-indigo-500"></select>
-                            </div>
-                            <div>
-                                <label for="task-status" class="block text-sm font-medium text-gray-700">Status</label>
-                                <select id="task-status" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm bg-white focus:ring-indigo-500 focus:border-indigo-500"></select>
-                            </div>
-                        </div>
-                        
-                        <div class="flex justify-end space-x-3 pt-4">
-                            <button type="button" onclick="closeTaskModal()" class="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-150">Cancelar</button>
-                            <button type="submit" id="task-form-submit-btn" class="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-150 shadow-md">Salvar Task</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- DASHBOARD VIEW -->
-            <div id="dashboard-view" class="view p-4 md:p-8">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-                    <h2 class="text-3xl font-bold text-gray-900 mb-4 md:mb-0">Dashboard de Prioridades</h2>
-                </div>
-                
-                <div id="dashboard-summary" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                    </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="bg-white p-5 rounded-xl shadow-lg border-t-4 border-indigo-500 hover:shadow-xl transition duration-300 lg:col-span-2"> 
-                        <h3 class="text-xl font-semibold mb-4 text-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                            <span id="po-status-chart-title" class="mb-2 sm:mb-0">Status por Product Owner</span>
-                            <select id="filter-dashboard-po" 
-                                class="w-full sm:w-48 rounded-lg border-gray-300 shadow-sm p-2 border text-sm bg-gray-50 focus:ring-indigo-500 focus:border-indigo-500" 
-                                onchange="drawPOStatusChart(this.value)">
-                                <option value="">-- Todos os Product Owners --</option>
-                            </select>
-                        </h3>
-                        <div class="chart-container">
-                            <canvas id="chart-po-status"></canvas>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white p-5 rounded-xl shadow-lg border-t-4 border-green-500 hover:shadow-xl transition duration-300">
-                        <h3 class="text-xl font-semibold mb-4 text-gray-800">Iniciativas Concluídas</h3>
-                        <div class="chart-container">
-                            <canvas id="chart-done-pending"></canvas>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white p-5 rounded-xl shadow-lg border-t-4 border-indigo-500 hover:shadow-xl transition duration-300 lg:col-span-2"> 
-                        <h3 class="text-xl font-semibold mb-4 text-gray-800 flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                            <span id="area-status-chart-title" class="mb-2 sm:mb-0">Status por Área</span>
-                            <select id="filter-dashboard-status" 
-                                class="w-full sm:w-48 rounded-lg border-gray-300 shadow-sm p-2 border text-sm bg-gray-50 focus:ring-indigo-500 focus:border-indigo-500" 
-                                onchange="drawAreaStatusChart(this.value)">
-                                <option value="">-- Todos os Status --</option>
-                            </select>
-                        </h3>
-                        <div class="chart-container">
-                            <canvas id="chart-area-status"></canvas>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white p-5 rounded-xl shadow-lg border-t-4 border-indigo-500 hover:shadow-xl transition duration-300">
-                        <h3 class="text-xl font-semibold mb-4 text-gray-800">Total de Iniciativas por Área</h3>
-                        <div class="chart-container">
-                            <canvas id="chart-area-total"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- STORIES VIEW -->
-            <div id="stories-view" class="view hidden p-4 md:p-8">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6" id="stories-list-header">
-                    <h2 class="text-3xl font-bold text-gray-900 mb-4 sm:mb-0">Histórias de Usuário</h2>
-                    <button onclick="openStoryForm()"
-                        class="w-full sm:w-auto bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition duration-150 flex items-center justify-center text-base">
-                        <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                        Nova História
-                    </button>
-                </div>
-
-                <div id="story-form-container" class="bg-white p-6 md:p-8 rounded-xl shadow-lg mb-8 hidden border-t-4 border-indigo-600">
-                    <h3 id="story-form-title" class="text-2xl font-semibold mb-6 text-indigo-700 border-b pb-3">Nova História</h3>
-                    <form id="story-form" class="space-y-4">
-                        <input type="hidden" id="story-id" value="">
-                        <input type="hidden" id="story-doc-id">
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <div class="md:col-span-1">
-                                <label for="story-external-id" class="block text-sm font-medium text-gray-700">ID Externo</label>
-                                <input type="number" id="story-external-id" min="0" maxlength="10" 
-                                       class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm focus:ring-indigo-500 focus:border-indigo-500" 
-                                       placeholder="1234567890">
-                            </div>
-                            <div class="md:col-span-3">
-                                <label for="story-title" class="block text-sm font-medium text-gray-700">Título/Resumo</label>
-                                <input type="text" id="story-title" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            </div>
-                        </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                             <div>
-                                <label for="story-external-link" class="block text-sm font-medium text-gray-700">Link Externo (Jira, Trello, etc.)</label>
-                                <input type="url" id="story-external-link" 
-                                    class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                    placeholder="https://sua-ferramenta/projeto/12345">
-                            </div>
-                            <div>
-                                <label for="story-feature-id" class="block text-sm font-medium text-gray-700">Feature Associada</label>
-                                <select id="story-feature-id" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm bg-white focus:ring-indigo-500 focus:border-indigo-500">
-                                    <option value="">-- Nenhuma Feature Associada --</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label for="story-description" class="block text-sm font-medium text-gray-700">Descrição</label>
-                            <textarea id="story-description" rows="3" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm focus:ring-indigo-500 focus:border-indigo-500"></textarea>
-                        </div>
-
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div class="col-span-2 md:col-span-1">
-                                <label for="story-requested-date" class="block text-sm font-medium text-gray-700">Data de Inclusão</label>
-                                <input type="date" id="story-requested-date" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            </div>
-                            <div class="col-span-2 md:col-span-1">
-                                <label for="story-requester-name" class="block text-sm font-medium text-gray-700">Solicitante</label>
-                                <input type="text" id="story-requester-name" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            </div>
-                            <div class="col-span-2 md:col-span-1">
-                                <label for="story-area" class="block text-sm font-medium text-gray-700">Área</label>
-                                <select id="story-area" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm bg-white focus:ring-indigo-500 focus:border-indigo-500"></select>
-                            </div>
-                            <div class="col-span-2 md:col-span-1">
-                                <label for="story-po" class="block text-sm font-medium text-gray-700">Product Owner</label>
-                                <select id="story-po" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm bg-white focus:ring-indigo-500 focus:border-indigo-500"></select>
-                            </div>
-                            <div class="col-span-2 md:col-span-2">
-                                <label for="story-status" class="block text-sm font-medium text-gray-700">Status</label>
-                                <select id="story-status" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm bg-white focus:ring-indigo-500 focus:border-indigo-500"></select>
-                            </div>
-                            <div class="col-span-2 md:col-span-2">
-                                <label for="story-priority" class="block text-sm font-medium text-gray-700">Prioridade</label>
-                                <select id="story-priority" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm bg-white focus:ring-indigo-500 focus:border-indigo-500">
-                                    <option value="Alta">Alta</option>
-                                    <option value="Média">Média</option>
-                                    <option value="Baixa">Baixa</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div class="flex flex-col sm:flex-row justify-between items-center pt-4 border-t border-gray-200 space-y-3 sm:space-y-0">
-                            <button type="button" onclick="handleInsertTask()" id="insert-task-btn"
-                                class="w-full sm:w-auto px-4 py-2 text-sm bg-purple-600 text-white rounded-lg transition duration-150 shadow-md flex items-center justify-center space-x-2 opacity-50 cursor-not-allowed">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path></svg>
-                                <span>Inserir Tarefa</span>
-                            </button>
-                            <div class="flex space-x-3 w-full sm:w-auto justify-end">
-                                <button type="button" onclick="closeStoryForm()" class="flex-1 sm:flex-none px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-150">Cancelar</button>
-                                <button type="submit" id="story-form-submit" class="flex-1 sm:flex-none px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-150 shadow-md">Salvar História</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                
-                <!-- Filters for Stories -->
-                <div class="bg-white p-6 rounded-xl shadow-lg mb-6 border-t-4 border-gray-300" id="stories-filters-container">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 pb-3 border-b border-gray-200 space-y-3 lg:space-y-0">
-                        <h3 class="text-xl font-semibold text-gray-800 mb-2 sm:mb-0">Filtros Rápidos</h3>
-                        <button onclick="exportDataToExcel('stories')"
-                            class="w-full sm:w-auto bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-green-700 transition duration-150 flex items-center justify-center space-x-1 text-sm">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                            <span>Exportar Histórias (CSV)</span>
-                        </button>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4"> 
-                        <select id="filter-area" class="filter-select mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm bg-white focus:ring-indigo-500 focus:border-indigo-500"></select>
-                        <select id="filter-po" class="filter-select mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm bg-white focus:ring-indigo-500 focus:border-indigo-500"></select>
-                        <select id="filter-status" class="filter-select mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm bg-white focus:ring-indigo-500 focus:border-indigo-500"></select>
-                        <select id="filter-priority" class="filter-select mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm bg-white focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="">-- Prioridade --</option>
-                            <option value="Alta">Alta</option>
-                            <option value="Média">Média</option>
-                            <option value="Baixa">Baixa</option>
-                        </select>
-                        <select id="filter-completion-status" class="filter-select mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm bg-white focus:ring-indigo-500 focus:border-indigo-500" onchange="renderStories()">
-                            <option value="">-- Status da Conclusão --</option>
-                            <option value="pending">Com Tasks Pendentes</option>
-                            <option value="done">100% Tasks Concluídas</option>
-                            <option value="no_tasks">Sem Tasks</option> 
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Table Actions -->
-                <div id="table-action-controls" class="bg-white p-4 rounded-xl shadow-lg mb-4 flex flex-wrap gap-2 items-center hidden text-sm border-t-4 border-gray-300">
-                    <input type="checkbox" id="select-all-stories" onchange="toggleSelectAll(this.checked)" 
-                        class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 mr-2">
-                    <span class="text-sm font-medium text-gray-700" id="selected-count-message">0 itens selecionados</span>
-
-                    <button id="edit-selected-btn" onclick="editSelectedStory()" disabled
-                        class="px-3 py-1.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition duration-150 shadow-md flex items-center justify-center space-x-1 text-xs disabled:opacity-50 disabled:cursor-not-allowed">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                        <span>Editar</span>
-                    </button>
-
-                    <button id="delete-selected-btn" onclick="confirmDeleteSelected()" disabled
-                        class="px-3 py-1.5 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-150 shadow-md flex items-center justify-center space-x-1 text-xs disabled:opacity-50 disabled:cursor-not-allowed">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        <span>Excluir</span>
-                    </button>
-                </div>
-
-                <div class="bg-white rounded-xl shadow-lg overflow-x-auto border" id="stories-table-wrapper">
-                    <table class="min-w-full divide-y divide-gray-200 dense-table">
-                        <thead class="bg-gray-100 sticky-header">
+            <div class="card overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full dense-table">
+                        <thead>
                             <tr>
-                                <th class="p-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                                    <input type="checkbox" id="header-select-all" onchange="toggleSelectAll(this.checked)" class="w-4 h-4 text-indigo-600 bg-gray-200 border-gray-300 rounded focus:ring-indigo-500">
-                                </th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">ID EXT.</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Tipo</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Título</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Área</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">PO</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Solicitante</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Data Inc.</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Status</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Prioridade</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Progresso</th>
+                                <th class="w-12 text-center"><input type="checkbox" id="header-select-all" onchange="toggleSelectAll(this.checked)" class="w-4 h-4 accent-indigo-600"></th>
+                                <th class="text-left">ID</th>
+                                <th class="text-left">Descrição da História</th>
+                                <th class="text-left">Área</th>
+                                <th class="text-left">Status</th>
+                                <th class="text-left">Progresso</th>
                             </tr>
                         </thead>
-                        <tbody id="stories-table-body" class="bg-white divide-y divide-gray-100">
-                            </tbody>
+                        <tbody id="stories-table-body" class="divide-y divide-slate-100"></tbody>
                     </table>
-                    <p id="no-stories-message" class="text-center text-gray-500 p-6 hidden">Nenhuma história encontrada.</p>
                 </div>
             </div>
-            
-            <!-- FEATURE VIEW -->
-            <div id="feature-view" class="view hidden p-4 md:p-8">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6" id="feature-list-header">
-                    <h2 class="text-3xl font-bold text-gray-900 mb-4 sm:mb-0">Gerenciamento de Features</h2>
-                    <button onclick="openFeatureForm()"
-                        class="w-full sm:w-auto bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-purple-700 transition duration-150 flex items-center justify-center text-base">
-                        <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                        Nova Feature
-                    </button>
-                </div>
+        </div>
 
-                <div id="feature-form-container" class="bg-white p-6 md:p-8 rounded-xl shadow-lg mb-8 hidden border-t-4 border-purple-600">
-                    <h3 id="feature-form-title" class="text-2xl font-semibold mb-6 text-purple-700 border-b pb-3">Nova Feature</h3>
-                    <form id="feature-form" class="space-y-4">
-                        <input type="hidden" id="feature-id" value="">
-                        <input type="hidden" id="feature-doc-id">
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <div class="md:col-span-1">
-                                <label for="feature-external-id" class="block text-sm font-medium text-gray-700">ID Externo</label>
-                                <input type="number" id="feature-external-id" min="0" maxlength="10" 
-                                    class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm focus:ring-purple-500 focus:border-purple-500" 
-                                    placeholder="1234567890">
-                            </div>
-                            <div class="md:col-span-3">
-                                <label for="feature-title" class="block text-sm font-medium text-gray-700">Título/Resumo</label>
-                                <input type="text" id="feature-title" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm focus:ring-purple-500 focus:border-purple-500">
-                            </div>
-                        </div>
+        <!-- Configs View -->
+        <div id="configs-view" class="view hidden p-6 md:p-10 max-w-7xl mx-auto">
+            <header class="mb-10">
+                <h2 class="text-4xl font-black text-slate-900 tracking-tight">Sistema</h2>
+                <p class="text-slate-500 mt-1 font-medium">Gestão de catálogos e parâmetros globais do Scrum.</p>
+            </header>
+            <div id="configs-content" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+        </div>
 
-                        <div>
-                            <label for="feature-description" class="block text-sm font-medium text-gray-700">Descrição</label>
-                            <textarea id="feature-description" rows="3" class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm focus:ring-purple-500 focus:border-purple-500"></textarea>
-                        </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label for="feature-directorate" class="block text-sm font-medium text-gray-700">Diretoria</label>
-                                <select id="feature-directorate" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm bg-white focus:ring-purple-500 focus:border-purple-500"></select>
-                            </div>
-                            <div>
-                                <label for="feature-po" class="block text-sm font-medium text-gray-700">Product Owner</label>
-                                <select id="feature-po" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm bg-white focus:ring-purple-500 focus:border-purple-500"></select>
-                            </div>
-                            <div>
-                                <label for="feature-status" class="block text-sm font-medium text-gray-700">Status</label>
-                                <select id="feature-status" required class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm bg-white focus:ring-purple-500 focus:border-purple-500"></select>
-                            </div>
-                        </div>
-
-                        <div class="flex flex-col sm:flex-row justify-between items-center pt-4 border-t border-gray-200 space-y-3 sm:space-y-0">
-                            <button type="button" onclick="handleInsertStory()" id="insert-story-btn"
-                                class="w-full sm:w-auto px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg transition duration-150 shadow-md flex items-center justify-center space-x-2 opacity-50 cursor-not-allowed">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"></path></svg>
-                                <span>Inserir História</span>
-                            </button>
-                            <div class="flex space-x-3 w-full sm:w-auto justify-end">
-                                <button type="button" onclick="closeFeatureForm()" class="flex-1 sm:flex-none px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition duration-150">Cancelar</button>
-                                <button type="submit" id="feature-form-submit" class="flex-1 sm:flex-none px-4 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition duration-150 shadow-md">Salvar Feature</button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-
-                <div id="feature-filters-container" class="bg-white p-6 rounded-xl shadow-lg mb-6 border-t-4 border-gray-300">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 pb-3 border-b border-gray-200 space-y-3 lg:space-y-0">
-                        <h3 class="text-xl font-semibold text-gray-800 mb-2 sm:mb-0">Filtros Rápidos</h3>
-                        <button onclick="exportDataToExcel('features')"
-                            class="w-full sm:w-auto bg-green-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-green-700 transition duration-150 flex items-center justify-center space-x-1 text-sm">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                            <span>Exportar Features (CSV)</span>
-                        </button>
-                    </div>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <select id="filter-feature-directorate" class="filter-select-feature mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm bg-white focus:ring-purple-500 focus:border-purple-500" onchange="renderFeatures()"></select>
-                        <select id="filter-feature-po" class="filter-select-feature mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm bg-white focus:ring-purple-500 focus:border-purple-500" onchange="renderFeatures()"></select>
-                        <select id="filter-feature-status" class="filter-select-feature mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2.5 border text-sm bg-white focus:ring-purple-500 focus:border-purple-500" onchange="renderFeatures()"></select>
-                        <button onclick="clearFeatureFilters()" class="w-full px-4 py-2 text-sm bg-gray-200 text-gray-700 font-semibold rounded-lg hover:bg-gray-300 transition duration-150">Limpar Filtros</button>
-                    </div>
-                </div>
-                
-                <div id="feature-table-action-controls" class="bg-white p-4 rounded-xl shadow-lg mb-4 flex flex-wrap gap-2 items-center hidden text-sm border-t-4 border-gray-300">
-                    <input type="checkbox" id="select-all-features" onchange="toggleSelectAllFeatures(this.checked)" 
-                        class="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 mr-2">
-                    <span class="text-sm font-medium text-gray-700" id="selected-feature-count-message">0 itens selecionados</span>
-
-                    <button id="edit-selected-feature-btn" onclick="editSelectedFeature()" disabled
-                        class="px-3 py-1.5 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition duration-150 shadow-md flex items-center justify-center space-x-1 text-xs disabled:opacity-50 disabled:cursor-not-allowed">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                        <span>Editar</span>
-                    </button>
-
-                    <button id="delete-selected-feature-btn" onclick="confirmDeleteSelectedFeatures()" disabled
-                        class="px-3 py-1.5 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-150 shadow-md flex items-center justify-center space-x-1 text-xs disabled:opacity-50 disabled:cursor-not-allowed">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        <span>Excluir</span>
-                    </button>
-                </div>
-                <div class="bg-white rounded-xl shadow-lg overflow-x-auto border" id="feature-table-wrapper">
-                    <table class="min-w-full divide-y divide-gray-200 dense-table">
-                        <thead class="bg-gray-100 sticky-header">
+        <!-- Task Modals -->
+        <div id="task-list-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[80] hidden p-4">
+             <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[85vh] overflow-y-auto">
+                <h3 id="task-modal-list-title" class="text-2xl font-bold text-slate-900 mb-6 border-b pb-4">Backlog de Tarefas</h3>
+                <div class="overflow-hidden border rounded-2xl mb-8">
+                    <table class="w-full">
+                        <thead class="bg-slate-50 border-b">
                             <tr>
-                                <th class="p-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                                    <input type="checkbox" id="header-select-all-features" onchange="toggleSelectAllFeatures(this.checked)" class="w-4 h-4 text-purple-600 bg-gray-200 border-gray-300 rounded focus:ring-purple-500">
-                                </th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">ID EXT.</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Título</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Diretoria</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">PO</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Status</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Progresso</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Identificador</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Título da Tarefa</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase">Situação</th>
+                                <th class="px-6 py-4 text-center text-xs font-bold text-slate-500 uppercase">Ações</th>
                             </tr>
                         </thead>
-                        <tbody id="features-table-body" class="bg-white divide-y divide-gray-100">
-                            </tbody>
+                        <tbody id="task-list-modal-table-body" class="divide-y divide-slate-100 bg-white"></tbody>
                     </table>
-                    <p id="no-features-message" class="text-center text-gray-500 p-6 hidden">Nenhuma feature registrada.</p>
                 </div>
-            </div>
+                <div class="flex flex-col sm:flex-row justify-between gap-4">
+                     <button id="add-task-from-modal-btn" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition">Adicionar Tarefa</button>
+                     <button onclick="closeStoryTasksModal()" class="bg-slate-100 text-slate-600 px-6 py-3 rounded-xl font-bold hover:bg-slate-200 transition">Fechar</button>
+                </div>
+             </div>
+        </div>
 
-            <!-- CONFIGS VIEW -->
-            <div id="configs-view" class="view hidden p-4 md:p-8">
-                <h2 class="text-3xl font-bold text-gray-900 mb-8">Configurações de Sistema</h2>
-                <p class="text-gray-600 mb-8 text-lg">Gerencie as opções de customização para o gerenciamento de Features, Histórias e Tarefas.</p>
-            </div>
-
-            <!-- INTEGRATION VIEW -->
-            <div id="integration-view" class="view hidden p-4 md:p-8">
-                <h2 class="text-3xl font-bold text-gray-900 mb-8">Configurações de Integração</h2>
-                <div class="bg-white p-6 rounded-xl shadow-lg border-t-4 border-indigo-600">
-                    <h3 class="text-xl font-semibold mb-4 text-gray-800">Status da Integração</h3>
-                    <p class="text-gray-600 mb-4">Esta seção será utilizada para configurar conexões com ferramentas externas.</p>
-                    <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-300 text-yellow-800">
-                        <p class="font-medium">Nenhuma integração configurada.</p>
-                        <p class="text-sm">Funcionalidade em desenvolvimento.</p>
+        <!-- Task Create Modal -->
+        <div id="task-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[90] hidden p-4">
+            <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-lg"> 
+                <h3 id="task-modal-title" class="text-2xl font-bold text-slate-900 mb-6 border-b pb-4">Detalhes da Tarefa</h3>
+                <form id="task-form" class="space-y-5">
+                    <input type="hidden" id="task-story-id"><input type="hidden" id="task-id"><input type="hidden" id="task-doc-id"> 
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">ID Externo</label>
+                            <input type="number" id="task-external-id" required class="w-full border-2 border-slate-50 p-3 rounded-xl bg-slate-50">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">ID GMUD</label>
+                            <input type="text" id="task-gmud-id" class="w-full border-2 border-slate-50 p-3 rounded-xl bg-slate-50">
+                        </div>
                     </div>
-                </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nome da Tarefa</label>
+                        <input type="text" id="task-title" required class="w-full border-2 border-slate-50 p-3 rounded-xl bg-slate-50">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Link de PR / Documento</label>
+                        <input type="url" id="task-external-link" class="w-full border-2 border-slate-50 p-3 rounded-xl bg-slate-50">
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sistema</label>
+                            <select id="task-system" required class="w-full border-2 border-slate-50 p-2 rounded-xl bg-slate-50 text-xs"></select>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Lead</label>
+                            <select id="task-techlead" required class="w-full border-2 border-slate-50 p-2 rounded-xl bg-slate-50 text-xs"></select>
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</label>
+                            <select id="task-status" required class="w-full border-2 border-slate-50 p-2 rounded-xl bg-slate-50 text-xs"></select>
+                        </div>
+                    </div>
+                    <div class="flex justify-end space-x-3 pt-6">
+                        <button type="button" onclick="closeTaskModal()" class="font-bold text-slate-400 px-4">Voltar</button>
+                        <button type="submit" class="bg-indigo-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-indigo-100">Gravar Tarefa</button>
+                    </div>
+                </form>
             </div>
-        </div> 
-    </div> 
+        </div>
+
+    </main>
 
 <script>
-    // === MOBILE MENU CONTROL ===
-    function toggleMobileMenu(shouldClose = false) {
-        const sidebar = document.getElementById('sidebar-menu');
-        const overlay = document.getElementById('mobile-overlay');
-        if (!sidebar || !overlay) return;
-        if (window.innerWidth < 768 || shouldClose) {
-            if (shouldClose || sidebar.classList.contains('open')) {
-                sidebar.classList.remove('open');
-                overlay.classList.remove('open');
-            } else if (!shouldClose && !sidebar.classList.contains('open')) {
-                sidebar.classList.add('open');
-                overlay.classList.add('open');
-            }
-        }
-    }
-
-    // === DATA AND CONFIGURATION VARIABLES ===
+    // === ESTADO GLOBAL ===
     var features = [];
     var stories = [];
     var tasks = [];
+    var configs = {
+        directorate: [], area: [], po: [], 
+        statusStory: [], statusTask: [], statusFeature: [], 
+        system: [], techlead: []
+    };
     
     window.firestone = window.firestone || null;
     window._lastTaskModalStoryId = null;
-
-    let configs = {
-        directorate: [ 
-            { id: 1, name: 'Executiva', isActive: true },
-            { id: 2, name: 'Operacional', isActive: true }
-        ],
-        area: [
-            { id: 1, name: 'Frontend', isActive: true },
-            { id: 2, name: 'Backend', isActive: true },
-            { id: 3, name: 'UX/UI', isActive: true }
-        ],
-        po: [
-            { id: 1, name: 'João Silva', isActive: true },
-            { id: 2, name: 'Maria Souza', isActive: true }
-        ],
-        statusStory: [
-            { id: 10, name: 'A Fazer', isActive: true },
-            { id: 11, name: 'Em Desenvolvimento', isActive: true },
-            { id: 12, name: 'Em Teste', isActive: true },
-            { id: 13, name: 'Concluído', isActive: true }
-        ],
-        statusTask: [
-            { id: 20, name: 'Pendente', isActive: true },
-            { id: 21, name: 'Iniciado', isActive: true },
-            { id: 22, name: 'Concluído', isActive: true }
-        ],
-        statusFeature: [ 
-            { id: 30, name: 'Proposto', isActive: true },
-            { id: 31, name: 'Aprovado', isActive: true },
-            { id: 32, name: 'Em Andamento', isActive: true },
-            { id: 33, name: 'Concluído', isActive: true }
-        ],
-        system: [
-            { id: 101, name: 'ERP', isActive: true },
-            { id: 102, name: 'CRM', isActive: true },
-            { id: 103, name: 'E-commerce', isActive: true },
-            { id: 104, name: 'Backend', isActive: true },
-            { id: 105, name: 'Frontend', isActive: true }
-        ],
-        techlead: [
-            { id: 201, name: 'Pedro Alves', isActive: true },
-            { id: 202, name: 'Carla Dias', isActive: true }
-        ]
-    };
-    let currentView = 'dashboard';
-
-    const STORY_TYPES = [
-        { name: 'História', color: 'bg-indigo-100 text-indigo-800 border-indigo-500' }
-    ];
-
-    const priorityColors = {
-        'Alta': 'bg-red-600 text-white border-red-800',
-        'Média': 'bg-yellow-500 text-white border-yellow-700',
-        'Baixa': 'bg-green-600 text-white border-green-800',
-    };
-    
-    const statusColors = {
-        'A Fazer': 'bg-red-500 text-white',
-        'Em Desenvolvimento': 'bg-blue-500 text-white',
-        'Em Teste': 'bg-yellow-500 text-white',
-        'Concluído': 'bg-green-500 text-white',
-        'Pendente': 'bg-gray-400 text-white',
-        'Iniciado': 'bg-indigo-400 text-white',
-        'Proposto': 'bg-gray-300 text-gray-800',
-        'Aprovado': 'bg-blue-400 text-white',
-        'Em Andamento': 'bg-yellow-400 text-white',
-    };
-
-    const chartColors = {
-        'A Fazer': 'rgba(239, 68, 68, 0.9)',
-        'Em Desenvolvimento': 'rgba(59, 130, 246, 0.9)',
-        'Em Teste': 'rgba(250, 204, 21, 0.9)',
-        'Concluído': 'rgba(16, 185, 129, 0.9)',
-        'Geral': 'rgba(99, 102, 241, 0.8)',
-        'Chart.A Fazer': 'rgba(239, 68, 68, 1)', 
-        'Chart.Concluido': 'rgba(16, 185, 129, 1)', 
-        'Chart.Total': 'rgba(99, 102, 241, 0.9)', 
-    };
-
-    let myCharts = [];
-    let poFilterElement;
-    let statusFilterElement;
-    let selectedStoryIds = new Set(); 
-    let selectedTaskIds = new Set(); 
-    let selectedFeatureIds = new Set();
-    
     const STATUS_CONCLUIDO_NAME = 'Concluído';
     const generateId = () => Date.now() + Math.floor(Math.random() * 1000);
 
-    // === PERSISTENCE FUNCTIONS (Configs only) ===
-    function loadData() {
-        try {
-            const storedConfigs = localStorage.getItem('scrumConfigs');
-            if (storedConfigs) {
-                const loadedConfigs = JSON.parse(storedConfigs);
-                configs.area = loadedConfigs.area || configs.area;
-                configs.po = loadedConfigs.po || configs.po;
-                configs.statusStory = loadedConfigs.statusStory || loadedConfigs.status || configs.statusStory;
-                configs.statusTask = loadedConfigs.statusTask || loadedConfigs.status || configs.statusTask;
-                configs.directorate = loadedConfigs.directorate || configs.directorate;
-                configs.statusFeature = loadedConfigs.statusFeature || configs.statusFeature;
-                configs.system = loadedConfigs.system || configs.system; 
-                configs.techlead = loadedConfigs.techlead || configs.techlead; 
-            }
-        } catch (e) { console.error("Erro ao carregar do localStorage:", e); }
-    }
+    const statusColors = {
+        'A Fazer': 'bg-rose-500 text-white',
+        'Em Desenvolvimento': 'bg-indigo-500 text-white',
+        'Em Teste': 'bg-amber-400 text-white',
+        'Concluído': 'bg-emerald-500 text-white',
+        'Pendente': 'bg-slate-400 text-white',
+        'Iniciado': 'bg-violet-400 text-white',
+        'Proposto': 'bg-slate-200 text-slate-600',
+        'Aprovado': 'bg-blue-400 text-white',
+        'Em Andamento': 'bg-amber-400 text-white',
+    };
 
-    function saveConfigs() {
-        localStorage.setItem('scrumConfigs', JSON.stringify(configs));
-    }
+    const priorityColors = {
+        'Alta': 'bg-rose-50 text-rose-600 border-rose-200',
+        'Média': 'bg-amber-50 text-amber-600 border-amber-200',
+        'Baixa': 'bg-emerald-50 text-emerald-600 border-emerald-200',
+    };
 
-    // === MODAL FUNCTIONS ===
-    function showModal(title, body, actionsHtml) {
-        document.getElementById('modal-title').textContent = title;
-        document.getElementById('modal-body').textContent = body;
-        document.getElementById('modal-actions').innerHTML = actionsHtml;
-        document.getElementById('message-modal').classList.remove('hidden');
-    }
-
-    function closeModal() {
-        document.getElementById('message-modal').classList.add('hidden');
-    }
-    
-    function openTaskModal(storyId, storyTitle, task = null) {
-        const taskIdElement = document.getElementById('task-id');
-        const taskDocIdElement = document.getElementById('task-doc-id');
-        const storyIdElement = document.getElementById('task-story-id');
-        const titleElement = document.getElementById('task-modal-title');
-        const submitBtn = document.getElementById('task-form-submit-btn');
-
-        document.getElementById('task-form').reset();
-        populateTaskSelects();
-        storyIdElement.value = storyId;
-
-        if (task) {
-            taskIdElement.value = task.id;
-            taskDocIdElement.value = task._docId || ''; 
-            titleElement.textContent = `Editar Tarefa: ${task.title}`;
-            submitBtn.textContent = 'Atualizar Task';
-            document.getElementById('task-external-id').value = task.externalId || '';
-            document.getElementById('task-gmud-id').value = task.gmudId || '';
-            document.getElementById('task-title').value = task.title;
-            document.getElementById('task-external-link').value = task.externalLink || '';
-            document.getElementById('task-system').value = task.system;
-            document.getElementById('task-techlead').value = task.techlead;
-            document.getElementById('task-status').value = task.status;
-        } else {
-            taskIdElement.value = generateId(); 
-            taskDocIdElement.value = ''; 
-            titleElement.textContent = `Inserir Nova Tarefa para História: ${storyTitle}`;
-            submitBtn.textContent = 'Salvar Task';
-        }
-        document.getElementById('task-modal').classList.remove('hidden');
-    }
-
-    function closeTaskModal() { document.getElementById('task-modal').classList.add('hidden'); }
-    
-    function editTask(taskId) {
-        const task = tasks.find(t => t.id === taskId);
-        if (!task) return;
-        const story = stories.find(s => s.id === task.storyId);
-        closeStoryTasksModal(); 
-        openTaskModal(task.storyId, story ? story.title : 'Edição', task);
-    }
-    
-    function confirmDeleteTask(taskId, taskTitle) {
-         showModal("Confirmar Exclusão", `Excluir a Task "${taskTitle}"?`, 
-            `<button onclick="closeModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl">Cancelar</button>
-             <button onclick="deleteTask(${taskId}); closeModal();" class="px-4 py-2 bg-red-600 text-white rounded-xl">Excluir</button>`);
-    }
-    
-    async function deleteTask(taskId) {
-        const taskToDelete = tasks.find(t => t.id === taskId);
-        if (taskToDelete && taskToDelete._docId && window.firestone) {
-             await window.firestone.deleteTaskByDocId(taskToDelete._docId);
-             if (window._lastTaskModalStoryId) renderTasksInModal(window._lastTaskModalStoryId);
-             renderStories();
+    // === UI CONTROLS ===
+    function toggleMobileMenu(close = false) {
+        const sidebar = document.getElementById('sidebar-menu');
+        const overlay = document.getElementById('mobile-overlay');
+        if(close || sidebar.classList.contains('open')) { 
+            sidebar.classList.remove('open'); 
+            overlay.classList.add('hidden'); 
+        } else { 
+            sidebar.classList.add('open'); 
+            overlay.classList.remove('hidden'); 
         }
     }
 
-    function confirmDeleteStory(id) {
-        const story = stories.find(s => s.id === id);
-        showModal("Confirmar Exclusão", `Excluir a história "${story.title}" e suas tarefas?`,
-            `<button onclick="closeModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl">Cancelar</button>
-             <button onclick="deleteStory(${id}); closeModal();" class="px-4 py-2 bg-red-600 text-white rounded-xl">Excluir</button>`);
+    function toggleSubmenu(id) {
+        const sub = document.getElementById(`submenu-${id}`);
+        const arrow = document.getElementById(`arrow-${id}`);
+        const current = sub.classList.contains('hidden');
+        document.querySelectorAll('[id^="submenu-"]').forEach(s => s.classList.add('hidden'));
+        document.querySelectorAll('[id^="arrow-"]').forEach(a => a.classList.remove('rotate-180'));
+        if(current) { sub.classList.remove('hidden'); arrow?.classList.add('rotate-180'); }
     }
 
-    function confirmDeleteFeature(id, title) {
-        showModal("Confirmar Exclusão", `Excluir a Feature "${title}"?`,
-            `<button onclick="closeModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-xl">Cancelar</button>
-             <button onclick="deleteFeature(${id}); closeModal();" class="px-4 py-2 bg-red-600 text-white rounded-xl">Excluir</button>`);
-    }
-
-    // === NAVIGATION AND VIEW FUNCTIONS ===
-    function closeAllSubmenus() {
-        document.getElementById('submenu-registrar')?.classList.add('hidden');
-        document.getElementById('submenu-config-parent')?.classList.add('hidden');
-        document.getElementById('nav-registrar')?.classList.remove('bg-gray-800', 'text-white', 'font-bold');
-        document.getElementById('nav-config-parent')?.classList.remove('bg-gray-800', 'text-white', 'font-bold');
-    }
-    
-    function toggleSubmenu(parentId) {
-        const submenuElement = document.getElementById(`submenu-${parentId}`);
-        const isCurrentlyOpen = !submenuElement.classList.contains('hidden');
-        closeAllSubmenus();
-        if (!isCurrentlyOpen) {
-            submenuElement.classList.remove('hidden');
-            document.getElementById(`nav-${parentId}`).classList.add('bg-gray-800', 'text-white', 'font-bold');
-        }
-    }
-    
     function showView(viewId) {
         document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
         document.getElementById(`${viewId}-view`)?.classList.remove('hidden');
-        currentView = viewId;
-        switch (viewId) {
-            case 'stories': populateSelects(); populateStoryFeatureSelect(); selectedStoryIds.clear(); renderStories(); closeStoryForm(); break;
-            case 'feature': populateFeatureSelects(); renderFeatures(); closeFeatureForm(); break;
-            case 'configs': renderConfigLists(); break;
-            case 'dashboard': renderDashboard(); break;
+        
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('bg-white/10', 'text-white'));
+        document.getElementById(`nav-${viewId}`)?.classList.add('bg-white/10', 'text-white');
+
+        if(viewId === 'configs') renderConfigLists();
+        if(viewId === 'stories') { renderStories(); populateSelects(); populateStoryFeatureSelect(); }
+        if(viewId === 'feature') { renderFeatures(); populateFeatureSelects(); }
+        if(viewId === 'dashboard') renderDashboard();
+    }
+
+    function showModal(title, body, actions) {
+        document.getElementById('modal-title').textContent = title;
+        document.getElementById('modal-body').textContent = body;
+        document.getElementById('modal-actions').innerHTML = actions;
+        document.getElementById('message-modal').classList.remove('hidden');
+    }
+    function closeModal() { document.getElementById('message-modal').classList.add('hidden'); }
+
+    // === CONFIGURATIONS ===
+    function renderConfigLists() {
+        const container = document.getElementById('configs-content');
+        container.innerHTML = '';
+        const groups = {
+            'Iniciativas': ['directorate', 'statusFeature'],
+            'Histórias': ['area', 'po', 'statusStory'],
+            'Tarefas': ['system', 'techlead', 'statusTask']
+        };
+
+        for (const [groupName, types] of Object.entries(groups)) {
+            types.forEach(type => {
+                const section = document.createElement('div');
+                section.className = "card p-6 border-t-4 border-indigo-600";
+                let title = type.charAt(0).toUpperCase() + type.slice(1);
+                if(type === 'po') title = 'Product Owners';
+                if(type.startsWith('status')) title = 'Status ' + groupName;
+
+                section.innerHTML = `
+                    <h3 class="text-xs font-black mb-4 text-indigo-700 uppercase tracking-widest">${title}</h3>
+                    <div id="list-${type}" class="space-y-2 mb-6 max-h-48 overflow-y-auto pr-2"></div>
+                    <div class="flex space-x-2">
+                        <input type="text" id="input-${type}" placeholder="Novo item..." class="border-2 border-slate-50 bg-slate-50 p-2 text-sm rounded-xl flex-1 focus:bg-white focus:border-indigo-200 transition-all">
+                        <button onclick="addConfigItem('${type}')" class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold shadow-md shadow-indigo-100 hover:bg-indigo-700 transition">+</button>
+                    </div>
+                `;
+                container.appendChild(section);
+                renderConfigItems(type);
+            });
         }
     }
 
-    // === FEATURE MANAGEMENT ===
-    function populateFeatureSelects() {
-        const selects = { 'feature-directorate': 'directorate', 'feature-po': 'po', 'feature-status': 'statusFeature', 'filter-feature-directorate': 'directorate', 'filter-feature-po': 'po', 'filter-feature-status': 'statusFeature' };
-        for (const id in selects) {
-            const el = document.getElementById(id); if (!el) continue;
-            const type = selects[id];
-            el.innerHTML = `<option value="">-- Selecione --</option>`;
+    function renderConfigItems(type) {
+        const list = document.getElementById(`list-${type}`);
+        list.innerHTML = '';
+        configs[type].forEach(item => {
+            const row = document.createElement('div');
+            row.className = "flex justify-between items-center bg-slate-50 p-3 rounded-xl text-xs border border-transparent hover:border-indigo-100 transition";
+            row.innerHTML = `
+                <span class="${item.isActive ? 'font-bold text-slate-700' : 'line-through text-slate-400'}">${item.name}</span>
+                <div class="flex space-x-3">
+                    <button onclick="toggleConfigActive('${type}', '${item._docId}')" class="hover:scale-125 transition" title="Ativar/Desativar">
+                        <span class="w-2 h-2 rounded-full inline-block ${item.isActive ? 'bg-emerald-500' : 'bg-slate-300'}"></span>
+                    </button>
+                    <button onclick="deleteConfigItem('${type}', '${item._docId}')" class="text-slate-300 hover:text-rose-500 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </div>
+            `;
+            list.appendChild(row);
+        });
+    }
+
+    async function addConfigItem(type) {
+        const input = document.getElementById(`input-${type}`);
+        const name = input.value.trim();
+        if(!name || !window.firestone) return;
+        await window.firestone.saveConfig({ type, name, isActive: true });
+        input.value = '';
+    }
+
+    async function toggleConfigActive(type, docId) {
+        const item = configs[type].find(i => i._docId === docId);
+        if(!item || !window.firestone) return;
+        await window.firestone.saveConfig({ ...item, isActive: !item.isActive });
+    }
+
+    async function deleteConfigItem(type, docId) {
+        if(!window.firestone) return;
+        showModal("Excluir Configuração", "Esta ação pode afetar itens já cadastrados. Deseja continuar?", 
+            `<button onclick="closeModal()" class="px-6 py-2 bg-slate-100 rounded-xl font-bold">Cancelar</button>
+             <button onclick="window.firestone.deleteConfig('${docId}'); closeModal();" class="px-6 py-2 bg-rose-600 text-white rounded-xl font-bold shadow-lg shadow-rose-100">Excluir</button>`);
+    }
+
+    function populateSelects() {
+        const mappings = { 'story-area': 'area', 'story-po': 'po', 'story-status': 'statusStory' };
+        for (const [id, type] of Object.entries(mappings)) {
+            const el = document.getElementById(id); if(!el) continue;
+            el.innerHTML = `<option value="">Selecionar...</option>`;
             configs[type].filter(c => c.isActive).forEach(c => { el.innerHTML += `<option value="${c.name}">${c.name}</option>`; });
         }
     }
 
+    function populateFeatureSelects() {
+        const mappings = { 'feature-directorate': 'directorate', 'feature-po': 'po', 'feature-status': 'statusFeature' };
+        for (const [id, type] of Object.entries(mappings)) {
+            const el = document.getElementById(id); if(!el) continue;
+            el.innerHTML = `<option value="">Selecionar...</option>`;
+            configs[type].filter(c => c.isActive).forEach(c => { el.innerHTML += `<option value="${c.name}">${c.name}</option>`; });
+        }
+    }
+
+    function populateTaskSelects() {
+        const mappings = { 'task-system': 'system', 'task-techlead': 'techlead', 'task-status': 'statusTask' };
+        for (const [id, type] of Object.entries(mappings)) {
+            const el = document.getElementById(id); if(!el) continue;
+            el.innerHTML = `<option value="">Selecione...</option>`;
+            configs[type].filter(c => c.isActive).forEach(c => { el.innerHTML += `<option value="${c.name}">${c.name}</option>`; });
+        }
+    }
+
+    function populateStoryFeatureSelect() {
+        const el = document.getElementById('story-feature-id');
+        if(!el) return;
+        el.innerHTML = `<option value="">-- Sem Feature Associada --</option>`;
+        features.forEach(f => { el.innerHTML += `<option value="${f.id}">${f.title}</option>`; });
+    }
+
+    function renderStories() {
+        const body = document.getElementById('stories-table-body');
+        if(!body) return; body.innerHTML = '';
+        stories.forEach(s => {
+            const prog = getStoryProg(s.id);
+            const statusClass = statusColors[s.status] || 'bg-slate-100 text-slate-600';
+            const isSelected = selectedStoryIds.has(s.id);
+
+            body.innerHTML += `
+                <tr class="hover:bg-slate-50 transition group ${isSelected ? 'bg-indigo-50/50' : ''}">
+                    <td class="p-3 text-center"><input type="checkbox" onchange="toggleStorySel(${s.id}, this.checked)" ${isSelected ? 'checked' : ''} class="w-4 h-4 accent-indigo-600" data-id="${s.id}"></td>
+                    <td class="px-4 py-5 font-bold text-slate-400 text-xs">${s.externalId || '-'}</td>
+                    <td class="px-6 py-5" onclick="openStoryFormById(${s.id})">
+                        <div class="flex flex-col">
+                            <span class="text-sm font-bold text-slate-800">${s.title}</span>
+                            <span class="text-[10px] font-bold text-indigo-400 uppercase mt-1 tracking-wider">${s.po || 'Sem PO'}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-5 text-xs font-bold text-slate-500">${s.area}</td>
+                    <td class="px-6 py-5"><span class="status-badge ${statusClass}">${s.status}</span></td>
+                    <td class="px-4 py-5">
+                        <div class="flex items-center space-x-3">
+                            <div class="flex-1 completion-bar h-2 w-24">
+                                <div class="completion-fill bg-indigo-600" style="width: ${prog.total ? (prog.done/prog.total*100) : 0}%"></div>
+                            </div>
+                            <button onclick="openStoryTasksModal(${s.id})" class="text-[10px] font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded hover:bg-indigo-100 transition">
+                                ${prog.done}/${prog.total}
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        });
+        updateActionControls();
+    }
+
+    function getStoryProg(id) {
+        const ts = tasks.filter(t => t.storyId === id);
+        const done = ts.filter(t => t.status === STATUS_CONCLUIDO_NAME).length;
+        return { total: ts.length, done };
+    }
+
+    function openStoryForm(s = null) {
+        document.getElementById('story-form-container').classList.remove('hidden');
+        document.getElementById('story-form-container').scrollIntoView({ behavior: 'smooth' });
+        if(s) {
+            document.getElementById('story-doc-id').value = s._docId;
+            document.getElementById('story-id').value = s.id;
+            document.getElementById('story-external-id').value = s.externalId;
+            document.getElementById('story-title').value = s.title;
+            document.getElementById('story-area').value = s.area;
+            document.getElementById('story-po').value = s.po;
+            document.getElementById('story-status').value = s.status;
+            document.getElementById('story-priority').value = s.priority;
+            document.getElementById('story-description').value = s.description;
+            document.getElementById('story-requested-date').value = s.requestedDate;
+            document.getElementById('story-requester-name').value = s.requesterName;
+            document.getElementById('story-feature-id').value = s.featureId || '';
+            document.getElementById('insert-task-btn').classList.remove('opacity-50', 'pointer-events-none');
+        } else {
+            document.getElementById('story-form').reset();
+            document.getElementById('story-id').value = generateId();
+            document.getElementById('story-doc-id').value = '';
+            document.getElementById('insert-task-btn').classList.add('opacity-50', 'pointer-events-none');
+        }
+    }
+    function closeStoryForm() { document.getElementById('story-form-container').classList.add('hidden'); }
+    function openStoryFormById(id) { const s = stories.find(st => st.id === id); if(s) openStoryForm(s); }
+
+    document.getElementById('story-form').onsubmit = async function(e) {
+        e.preventDefault();
+        const data = {
+            id: parseInt(document.getElementById('story-id').value),
+            _docId: document.getElementById('story-doc-id').value || null,
+            externalId: document.getElementById('story-external-id').value,
+            title: document.getElementById('story-title').value,
+            area: document.getElementById('story-area').value,
+            po: document.getElementById('story-po').value,
+            status: document.getElementById('story-status').value,
+            priority: document.getElementById('story-priority').value,
+            description: document.getElementById('story-description').value,
+            requestedDate: document.getElementById('story-requested-date').value,
+            requesterName: document.getElementById('story-requester-name').value,
+            featureId: document.getElementById('story-feature-id').value ? parseInt(document.getElementById('story-feature-id').value) : null,
+            updatedAt: new Date().toISOString()
+        };
+        await window.firestone.saveStory(data);
+        if(!data._docId) { 
+             setTimeout(() => {
+                 const updated = stories.find(s => s.id === data.id);
+                 if(updated) openStoryForm(updated);
+             }, 500);
+        } else {
+            closeStoryForm();
+        }
+    };
+
     function renderFeatures() {
-        const tableBody = document.getElementById('features-table-body');
-        if (!tableBody) return;
-        tableBody.innerHTML = '';
+        const body = document.getElementById('features-table-body');
+        if(!body) return; body.innerHTML = '';
         features.forEach(f => {
-            const progress = getFeatureStoryProgress(f.id);
-            tableBody.innerHTML += `
-                <tr class="hover:bg-gray-50">
-                    <td class="p-3"><input type="checkbox" onchange="toggleFeatureSelection(${f.id}, this.checked)" class="w-4 h-4"></td>
-                    <td class="px-4 py-4 text-sm font-bold">${f.externalId || f.id}</td>
-                    <td class="px-6 py-4 text-sm">${f.title}</td>
-                    <td class="px-6 py-4 text-sm">${f.directorate}</td>
-                    <td class="px-6 py-4 text-sm">${f.po}</td>
-                    <td class="px-6 py-4"><span class="px-2 text-xs status-badge ${statusColors[f.status] || ''}">${f.status}</span></td>
-                    <td class="px-6 py-4"><div class="completion-bar"><div class="completion-fill bg-purple-500" style="width: ${progress.percentage}%"></div></div></td>
+            const statusClass = statusColors[f.status] || 'bg-slate-100 text-slate-600';
+            body.innerHTML += `
+                <tr class="hover:bg-slate-50 transition cursor-pointer group" onclick="openFeatureFormById(${f.id})">
+                    <td class="p-3 text-center"><div class="w-2 h-2 rounded-full bg-indigo-400 opacity-0 group-hover:opacity-100 transition mx-auto"></div></td>
+                    <td class="px-4 py-5 font-bold text-slate-400 text-xs">${f.externalId || f.id}</td>
+                    <td class="px-6 py-5 text-sm font-bold text-slate-800">${f.title}</td>
+                    <td class="px-6 py-5 text-sm font-medium text-slate-500">${f.po}</td>
+                    <td class="px-6 py-5"><span class="status-badge ${statusClass}">${f.status}</span></td>
+                    <td class="px-4 py-5 text-right">
+                         <button class="text-slate-300 group-hover:text-indigo-600 transition">
+                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                         </button>
+                    </td>
                 </tr>`;
         });
     }
 
-    function getFeatureStoryProgress(featureId) {
-        const featureStories = stories.filter(s => s.featureId === featureId);
-        const done = featureStories.filter(s => s.status === STATUS_CONCLUIDO_NAME).length;
-        return { total: featureStories.length, done, percentage: featureStories.length ? Math.round((done/featureStories.length)*100) : 0 };
-    }
-
-    function openFeatureForm(feature = null) {
+    function openFeatureForm(f = null) {
         document.getElementById('feature-form-container').classList.remove('hidden');
-        if (feature) {
-            document.getElementById('feature-doc-id').value = feature._docId;
-            document.getElementById('feature-id').value = feature.id;
-            document.getElementById('feature-title').value = feature.title;
-            document.getElementById('feature-directorate').value = feature.directorate;
-            document.getElementById('feature-po').value = feature.po;
-            document.getElementById('feature-status').value = feature.status;
+        document.getElementById('feature-form-container').scrollIntoView({ behavior: 'smooth' });
+        populateFeatureSelects();
+        if(f) {
+            document.getElementById('feature-doc-id').value = f._docId;
+            document.getElementById('feature-id').value = f.id;
+            document.getElementById('feature-external-id').value = f.externalId;
+            document.getElementById('feature-title').value = f.title;
+            document.getElementById('feature-directorate').value = f.directorate;
+            document.getElementById('feature-po').value = f.po;
+            document.getElementById('feature-status').value = f.status;
         } else {
             document.getElementById('feature-form').reset();
             document.getElementById('feature-id').value = generateId();
+            document.getElementById('feature-doc-id').value = '';
         }
     }
-    
     function closeFeatureForm() { document.getElementById('feature-form-container').classList.add('hidden'); }
+    function openFeatureFormById(id) { const f = features.find(feat => feat.id === id); if(f) openFeatureForm(f); }
 
     document.getElementById('feature-form').onsubmit = async function(e) {
         e.preventDefault();
         const data = {
             id: parseInt(document.getElementById('feature-id').value),
-            _docId: document.getElementById('feature-doc-id').value,
+            _docId: document.getElementById('feature-doc-id').value || null,
             externalId: document.getElementById('feature-external-id').value,
             title: document.getElementById('feature-title').value,
             directorate: document.getElementById('feature-directorate').value,
@@ -1012,197 +860,63 @@
         closeFeatureForm();
     };
 
-    // === STORY MANAGEMENT ===
-    function populateStoryFeatureSelect() {
-        const el = document.getElementById('story-feature-id');
-        if (!el) return;
-        el.innerHTML = `<option value="">-- Nenhuma Feature --</option>`;
-        features.forEach(f => { el.innerHTML += `<option value="${f.id}">${f.title}</option>`; });
-    }
-
-    function populateSelects() {
-        const selects = { 'story-area': 'area', 'story-po': 'po', 'story-status': 'statusStory', 'filter-area': 'area', 'filter-po': 'po', 'filter-status': 'statusStory' };
-        for (const id in selects) {
-            const el = document.getElementById(id); if (!el) continue;
-            const type = selects[id];
-            el.innerHTML = `<option value="">-- Selecione --</option>`;
-            configs[type].filter(c => c.isActive).forEach(c => { el.innerHTML += `<option value="${c.name}">${c.name}</option>`; });
-        }
-    }
-
-    function renderStories() {
-        const tableBody = document.getElementById('stories-table-body');
-        if (!tableBody) return;
-        tableBody.innerHTML = '';
-        stories.forEach(s => {
-            const progress = getStoryCompletionStatus(s.id);
-            tableBody.innerHTML += `
-                <tr class="hover:bg-gray-50">
-                    <td class="p-3"><input type="checkbox" onchange="toggleStorySelection(${s.id}, this.checked)" class="w-4 h-4"></td>
-                    <td class="px-4 py-4 text-sm font-bold">${s.externalId || s.id}</td>
-                    <td class="px-4 py-4 text-xs"><span class="px-2 border rounded-full bg-indigo-50">${s.type || 'História'}</span></td>
-                    <td class="px-6 py-4 text-sm font-semibold">${s.title}</td>
-                    <td class="px-6 py-4 text-sm">${s.area}</td>
-                    <td class="px-6 py-4 text-sm">${s.po}</td>
-                    <td class="px-6 py-4 text-sm">${s.requesterName || '-'}</td>
-                    <td class="px-4 py-4 text-sm">${s.requestedDate || '-'}</td>
-                    <td class="px-4 py-4"><span class="px-2 text-xs status-badge ${statusColors[s.status] || ''}">${s.status}</span></td>
-                    <td class="px-4 py-4"><span class="px-2 text-xs border rounded priority-badge ${priorityColors[s.priority] || ''}">${s.priority}</span></td>
-                    <td class="px-4 py-4">
-                        <button onclick="openStoryTasksModal(${s.id})" class="text-xs font-bold text-indigo-600 hover:underline">
-                            ${progress.done}/${progress.total} (${progress.percentage}%)
-                        </button>
-                    </td>
-                </tr>`;
-        });
-        updateActionControls();
-    }
-
-    function getStoryCompletionStatus(storyId) {
-        const storyTasks = tasks.filter(t => t.storyId === storyId);
-        const done = storyTasks.filter(t => t.status === STATUS_CONCLUIDO_NAME).length;
-        return { total: storyTasks.length, done, percentage: storyTasks.length ? Math.round((done/storyTasks.length)*100) : 0 };
-    }
-
-    function openStoryForm(story = null) {
-        document.getElementById('story-form-container').classList.remove('hidden');
-        const insertTaskBtn = document.getElementById('insert-task-btn');
-        if (story) {
-            document.getElementById('story-doc-id').value = story._docId || '';
-            document.getElementById('story-id').value = story.id;
-            document.getElementById('story-external-id').value = story.externalId || '';
-            document.getElementById('story-title').value = story.title;
-            document.getElementById('story-description').value = story.description;
-            document.getElementById('story-area').value = story.area;
-            document.getElementById('story-po').value = story.po;
-            document.getElementById('story-status').value = story.status;
-            document.getElementById('story-priority').value = story.priority;
-            document.getElementById('story-requested-date').value = story.requestedDate;
-            document.getElementById('story-requester-name').value = story.requesterName;
-            document.getElementById('story-feature-id').value = story.featureId || '';
-            insertTaskBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            insertTaskBtn.removeAttribute('disabled');
-        } else {
-            document.getElementById('story-form').reset();
-            document.getElementById('story-id').value = generateId();
-            document.getElementById('story-doc-id').value = '';
-            insertTaskBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            insertTaskBtn.setAttribute('disabled', 'true');
-        }
-    }
-    
-    function closeStoryForm() { document.getElementById('story-form-container').classList.add('hidden'); }
-
-    document.getElementById('story-form').onsubmit = async function(e) {
-        e.preventDefault();
-        const storyData = {
-            id: parseInt(document.getElementById('story-id').value),
-            _docId: document.getElementById('story-doc-id').value || null,
-            externalId: document.getElementById('story-external-id').value,
-            title: document.getElementById('story-title').value,
-            description: document.getElementById('story-description').value,
-            area: document.getElementById('story-area').value,
-            po: document.getElementById('story-po').value,
-            status: document.getElementById('story-status').value,
-            priority: document.getElementById('story-priority').value,
-            requestedDate: document.getElementById('story-requested-date').value,
-            requesterName: document.getElementById('story-requester-name').value,
-            featureId: document.getElementById('story-feature-id').value ? parseInt(document.getElementById('story-feature-id').value) : null,
-            updatedAt: new Date().toISOString()
-        };
-        const savedDocId = await window.firestone.saveStory(storyData);
-        if (!storyData._docId) {
-            const saved = stories.find(s => s.id === storyData.id);
-            if (saved) openStoryForm(saved);
-            showModal("Sucesso", "História criada! Agora pode adicionar tarefas.", `<button onclick="closeModal()" class="px-4 py-2 bg-indigo-600 text-white rounded">OK</button>`);
-        } else {
-            closeStoryForm();
-        }
-    };
-
-    async function deleteStory(id) {
-        const story = stories.find(s => s.id === id);
-        if (story && story._docId && window.firestone) {
-            await window.firestone.deleteStoryByDocId(story._docId);
-            const related = tasks.filter(t => t.storyId === id);
-            for (const t of related) { if (t._docId) await window.firestone.deleteTaskByDocId(t._docId); }
-            renderStories();
-        }
-    }
-
-    function toggleStorySelection(id, checked) { if (checked) selectedStoryIds.add(id); else selectedStoryIds.delete(id); updateActionControls(); }
-    function updateActionControls() {
-        const ctrl = document.getElementById('table-action-controls');
-        const count = selectedStoryIds.size;
-        if (count > 0) ctrl.classList.remove('hidden'); else ctrl.classList.add('hidden');
-        document.getElementById('selected-count-message').textContent = `${count} selecionado(s)`;
-        document.getElementById('edit-selected-btn').disabled = count !== 1;
-        document.getElementById('delete-selected-btn').disabled = count === 0;
-    }
-    
-    function editSelectedStory() {
-        const id = Array.from(selectedStoryIds)[0];
-        const s = stories.find(story => story.id === id);
-        if (s) openStoryForm(s);
-    }
-    
-    async function confirmDeleteSelected() {
-        showModal("Excluir Selecionados", `Deseja excluir ${selectedStoryIds.size} histórias?`, 
-            `<button onclick="closeModal()" class="px-4 py-2 bg-gray-200 rounded">Não</button>
-             <button onclick="deleteMassStories(); closeModal();" class="px-4 py-2 bg-red-600 text-white rounded">Sim</button>`);
-    }
-    
-    async function deleteMassStories() {
-        for (const id of Array.from(selectedStoryIds)) { await deleteStory(id); }
-        selectedStoryIds.clear();
-        updateActionControls();
-    }
-
-    // === TASK MANAGEMENT ===
-    function populateTaskSelects() {
-        const selects = { 'task-system': 'system', 'task-techlead': 'techlead', 'task-status': 'statusTask' };
-        for (const id in selects) {
-            const el = document.getElementById(id); if (!el) continue;
-            el.innerHTML = `<option value="">-- Selecione --</option>`;
-            configs[selects[id]].filter(c => c.isActive).forEach(c => { el.innerHTML += `<option value="${c.name}">${c.name}</option>`; });
-        }
-    }
-
-    function openStoryTasksModal(storyId) {
-        window._lastTaskModalStoryId = storyId;
-        renderTasksInModal(storyId);
+    function openStoryTasksModal(id) {
+        window._lastTaskModalStoryId = id;
         document.getElementById('task-list-modal').classList.remove('hidden');
+        renderTasksInModal(id);
     }
-    function closeStoryTasksModal() { document.getElementById('task-list-modal').classList.add('hidden'); }
+    function closeStoryTasksModal() { 
+        document.getElementById('task-list-modal').classList.add('hidden'); 
+        window._lastTaskModalStoryId = null;
+    }
 
-    function renderTasksInModal(storyId) {
+    function renderTasksInModal(id) {
         const body = document.getElementById('task-list-modal-table-body');
         body.innerHTML = '';
-        const storyTasks = tasks.filter(t => t.storyId === storyId);
-        if (!storyTasks.length) document.getElementById('no-tasks-modal-message').classList.remove('hidden');
-        else document.getElementById('no-tasks-modal-message').classList.add('hidden');
-        
-        storyTasks.forEach(t => {
+        const ts = tasks.filter(t => t.storyId === id);
+        if(ts.length === 0) {
+            body.innerHTML = '<tr><td colspan="4" class="p-10 text-center text-slate-400 font-medium">Nenhuma tarefa registrada.</td></tr>';
+        }
+        ts.forEach(t => {
+            const statusClass = statusColors[t.status] || 'bg-slate-100';
             body.innerHTML += `
-                <tr>
-                    <td class="px-4 py-3 text-sm">${t.externalId || '-'}</td>
-                    <td class="px-6 py-3 text-sm font-bold">${t.title}</td>
-                    <td class="px-6 py-3 text-sm">${t.system}</td>
-                    <td class="px-6 py-3 text-sm">${t.techlead}</td>
-                    <td class="px-6 py-3"><span class="px-2 text-xs status-badge ${statusColors[t.status] || ''}">${t.status}</span></td>
-                    <td class="px-4 py-3 text-center">
-                        <button onclick="editTask(${t.id})" class="text-blue-600 mr-2">Editar</button>
-                        <button onclick="confirmDeleteTask(${t.id}, '${t.title}')" class="text-red-600">X</button>
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="px-6 py-4 text-xs font-bold text-slate-400">${t.externalId || '-'}</td>
+                    <td class="px-6 py-4 text-sm font-bold text-slate-700">${t.title}</td>
+                    <td class="px-6 py-4"><span class="status-badge !text-[9px] ${statusClass}">${t.status}</span></td>
+                    <td class="px-6 py-4 text-center">
+                        <button onclick="editTask(${t.id})" class="text-indigo-600 font-bold mr-3">Editar</button>
+                        <button onclick="confirmDelTask(${t.id})" class="text-rose-500 font-bold">X</button>
                     </td>
                 </tr>`;
         });
+        document.getElementById('add-task-from-modal-btn').onclick = () => {
+             const s = stories.find(st => st.id === id);
+             openTaskModal(id, s.title);
+        };
     }
 
-    function handleInsertTask() {
-        const storyId = parseInt(document.getElementById('story-id').value);
-        const story = stories.find(s => s.id === storyId);
-        openTaskModal(storyId, story.title);
+    function openTaskModal(sid, stitle, t = null) {
+        document.getElementById('task-modal').classList.remove('hidden');
+        populateTaskSelects();
+        document.getElementById('task-story-id').value = sid;
+        if(t) {
+            document.getElementById('task-doc-id').value = t._docId;
+            document.getElementById('task-id').value = t.id;
+            document.getElementById('task-external-id').value = t.externalId;
+            document.getElementById('task-gmud-id').value = t.gmudId;
+            document.getElementById('task-title').value = t.title;
+            document.getElementById('task-external-link').value = t.externalLink;
+            document.getElementById('task-system').value = t.system;
+            document.getElementById('task-techlead').value = t.techlead;
+            document.getElementById('task-status').value = t.status;
+        } else { 
+            document.getElementById('task-form').reset(); 
+            document.getElementById('task-id').value = generateId();
+            document.getElementById('task-doc-id').value = '';
+        }
     }
+    function closeTaskModal() { document.getElementById('task-modal').classList.add('hidden'); }
 
     document.getElementById('task-form').onsubmit = async function(e) {
         e.preventDefault();
@@ -1221,42 +935,105 @@
         };
         await window.firestone.saveTask(data);
         closeTaskModal();
-        if (window._lastTaskModalStoryId) openStoryTasksModal(window._lastTaskModalStoryId);
     };
 
-    // === DASHBOARD & CONFIGS ===
+    function editTask(id) { 
+        const t = tasks.find(tk => tk.id === id); 
+        if(t) { const s = stories.find(st => st.id === t.storyId); openTaskModal(t.storyId, s.title, t); } 
+    }
+    
+    function confirmDelTask(id) {
+         showModal("Excluir", "Remover esta tarefa?", 
+            `<button onclick="closeModal()" class="px-6 py-2">Voltar</button>
+             <button onclick="window.firestone.deleteTask('${tasks.find(tk=>tk.id===id)._docId}'); closeModal();" class="px-6 py-2 bg-rose-600 text-white rounded-xl font-bold shadow-lg">Confirmar</button>`);
+    }
+
     function renderDashboard() {
         const done = stories.filter(s => s.status === STATUS_CONCLUIDO_NAME).length;
-        document.getElementById('dashboard-summary').innerHTML = `
-            <div class="bg-white p-6 rounded-xl border-t-4 border-indigo-500 shadow"><p class="text-sm">Total Histórias</p><p class="text-3xl font-bold">${stories.length}</p></div>
-            <div class="bg-white p-6 rounded-xl border-t-4 border-green-500 shadow"><p class="text-sm">Concluídas</p><p class="text-3xl font-bold">${done}</p></div>
-            <div class="bg-white p-6 rounded-xl border-t-4 border-red-500 shadow"><p class="text-sm">Prioridade Alta</p><p class="text-3xl font-bold">${stories.filter(s => s.priority==='Alta').length}</p></div>`;
-        drawPOStatusChart(); drawAreaStatusChart(); drawDonePendingChart(); drawAreaTotalChart();
+        const summary = document.getElementById('dashboard-summary');
+        if(!summary) return;
+        
+        summary.innerHTML = `
+            <div class="card p-8 border-l-8 border-indigo-500">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Iniciativas Totais</p>
+                <p class="text-4xl font-black text-slate-800 mt-2">${stories.length}</p>
+            </div>
+            <div class="card p-8 border-l-8 border-emerald-500">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Taxa de Conclusão</p>
+                <p class="text-4xl font-black text-slate-800 mt-2">${done} <span class="text-lg text-slate-300">(${stories.length ? Math.round(done/stories.length*100) : 0}%)</span></p>
+            </div>
+            <div class="card p-8 border-l-8 border-rose-500">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Críticos</p>
+                <p class="text-4xl font-black text-slate-800 mt-2">${stories.filter(s => s.priority === 'Alta').length}</p>
+            </div>`;
+        updateCharts();
     }
 
-    function drawPOStatusChart() {
-        const ctx = document.getElementById('chart-po-status')?.getContext('2d'); if (!ctx) return;
-        if (myCharts[0]) myCharts[0].destroy();
-        const labels = Array.from(new Set(stories.map(s => s.po)));
-        const data = labels.map(po => stories.filter(s => s.po === po).length);
-        myCharts[0] = new Chart(ctx, { type: 'bar', data: { labels, datasets: [{ label: 'Histórias', data, backgroundColor: 'rgba(99, 102, 241, 0.8)' }] }, options: { indexAxis: 'y', maintainAspectRatio: false } });
+    let charts = { po: null, done: null };
+    function updateCharts() {
+        const ctxPo = document.getElementById('chart-po-status')?.getContext('2d');
+        if(ctxPo) {
+            if(charts.po) charts.po.destroy();
+            const pos = Array.from(new Set(stories.map(s => s.po))).filter(p => p);
+            const data = pos.map(p => stories.filter(s => s.po === p).length);
+            charts.po = new Chart(ctxPo, {
+                type: 'bar',
+                data: { labels: pos, datasets: [{ data, backgroundColor: '#6366f1', borderRadius: 10 }] },
+                options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
+        const ctxDone = document.getElementById('chart-done-pending')?.getContext('2d');
+        if(ctxDone) {
+            if(charts.done) charts.done.destroy();
+            const dc = stories.filter(s => s.status === STATUS_CONCLUIDO_NAME).length;
+            charts.done = new Chart(ctxDone, {
+                type: 'doughnut',
+                data: { labels: ['Concluído', 'Pendente'], datasets: [{ data: [dc, stories.length-dc], backgroundColor: ['#10b981', '#f1f5f9'] }] },
+                options: { cutout: '80%', maintainAspectRatio: false }
+            });
+        }
     }
-    function drawAreaStatusChart() { /* Implementação similar */ }
-    function drawDonePendingChart() { /* Implementação similar */ }
-    function drawAreaTotalChart() { /* Implementação similar */ }
 
-    function renderConfigLists() {
-        const area = document.getElementById('configs-view');
-        area.innerHTML = `<h2 class="text-3xl font-bold mb-8">Configurações</h2>`;
-        // Implementar listagem e adição de itens nas coleções do objeto 'configs'
+    var selectedStoryIds = new Set();
+    function toggleStorySel(id, chk) { if(chk) selectedStoryIds.add(id); else selectedStoryIds.delete(id); updateActionControls(); }
+    function toggleSelectAll(chk) {
+        document.querySelectorAll('#stories-table-body input[type="checkbox"]').forEach(c => {
+            c.checked = chk; const id = parseInt(c.getAttribute('data-id'));
+            if(chk) selectedStoryIds.add(id); else selectedStoryIds.delete(id);
+        });
+        updateActionControls();
+    }
+    function updateActionControls() {
+        const ctrl = document.getElementById('table-action-controls');
+        if(selectedStoryIds.size > 0) ctrl.classList.remove('hidden'); else ctrl.classList.add('hidden');
+        document.getElementById('selected-count-message').textContent = `${selectedStoryIds.size} selecionado(s)`;
+    }
+    function editSelectedStory() { const id = Array.from(selectedStoryIds)[0]; const s = stories.find(st => st.id === id); if(s) openStoryForm(s); }
+    function confirmDeleteSelected() {
+        showModal("Remover", `Excluir estas ${selectedStoryIds.size} histórias?`, 
+            `<button onclick="closeModal()" class="px-6 py-2">Cancelar</button>
+             <button onclick="deleteMass(); closeModal();" class="px-6 py-2 bg-rose-600 text-white rounded-xl font-bold shadow-lg">Confirmar</button>`);
+    }
+    async function deleteMass() {
+        for(const id of Array.from(selectedStoryIds)) {
+            const s = stories.find(st => st.id === id);
+            if(s && s._docId) await window.firestone.deleteStoryByDocId(s._docId);
+        }
+        selectedStoryIds.clear(); updateActionControls();
     }
 
-    window.onload = () => { loadData(); showView('dashboard'); };
+    function handleInsertTask() {
+        const id = parseInt(document.getElementById('story-id').value);
+        const s = stories.find(st => st.id === id);
+        if(s) openTaskModal(id, s.title);
+    }
+
+    window.onload = () => showView('dashboard');
 </script>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-  import { getFirestore, collection, getDocs, addDoc, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDU3nmuB6kOiVAxuqTdpzOUjtzhVtj1sBg",
@@ -1273,71 +1050,58 @@
 
   function docToObj(snap) { return { _docId: snap.id, ...snap.data() }; }
 
-  async function loadFeatures() {
-    const snap = await getDocs(collection(db, 'features'));
-    window.features.length = 0;
-    snap.docs.forEach(d => window.features.push(docToObj(d)));
-    if (typeof window.renderFeatures === 'function') window.renderFeatures();
-  }
+  onSnapshot(collection(db, 'features'), (s) => {
+    window.features = s.docs.map(docToObj);
+    if(typeof window.renderFeatures === 'function') window.renderFeatures();
+    if(typeof window.populateStoryFeatureSelect === 'function') window.populateStoryFeatureSelect();
+  });
 
-  async function loadStories() {
-    const snap = await getDocs(collection(db, 'stories'));
-    window.stories.length = 0;
-    snap.docs.forEach(d => window.stories.push(docToObj(d)));
-    if (typeof window.renderStories === 'function') window.renderStories();
-    if (typeof window.populateStoryFeatureSelect === 'function') window.populateStoryFeatureSelect();
-  }
+  onSnapshot(collection(db, 'stories'), (s) => {
+    window.stories = s.docs.map(docToObj);
+    if(typeof window.renderStories === 'function') window.renderStories();
+    if(typeof window.renderDashboard === 'function') window.renderDashboard();
+  });
 
-  async function loadTasks() {
-    const snap = await getDocs(collection(db, 'tasks'));
-    window.tasks.length = 0;
-    snap.docs.forEach(d => window.tasks.push(docToObj(d)));
-    if (window._lastTaskModalStoryId && typeof window.renderTasksInModal === 'function') {
-        window.renderTasksInModal(window._lastTaskModalStoryId);
-    }
-  }
+  onSnapshot(collection(db, 'tasks'), (s) => {
+    window.tasks = s.docs.map(docToObj);
+    if(window._lastTaskModalStoryId && typeof window.renderTasksInModal === 'function') window.renderTasksInModal(window._lastTaskModalStoryId);
+    if(typeof window.renderStories === 'function') window.renderStories();
+  });
 
-  async function loadAllData() {
-    await Promise.all([loadFeatures(), loadStories(), loadTasks()]);
-    if (typeof window.renderDashboard === 'function') window.renderDashboard();
-  }
+  onSnapshot(collection(db, 'app_configs'), (s) => {
+    Object.keys(window.configs).forEach(k => window.configs[k] = []);
+    s.docs.forEach(d => {
+        const item = docToObj(d);
+        if(window.configs[item.type]) window.configs[item.type].push(item);
+    });
+    if(!document.getElementById('configs-view').classList.contains('hidden')) window.renderConfigLists();
+  });
 
+  async function saveConfig(c) {
+    const { _docId, ...payload } = c;
+    if(_docId) await updateDoc(doc(db, 'app_configs', _docId), payload);
+    else await addDoc(collection(db, 'app_configs'), payload);
+  }
+  async function deleteConfig(id) { await deleteDoc(doc(db, 'app_configs', id)); }
   async function saveFeature(f) {
     const { _docId, ...payload } = f;
-    if (_docId) await updateDoc(doc(db, 'features', _docId), payload);
+    if(_docId) await updateDoc(doc(db, 'features', _docId), payload);
     else await addDoc(collection(db, 'features'), payload);
-    await loadFeatures();
   }
-
   async function saveStory(s) {
     const { _docId, ...payload } = s;
-    let newId = _docId;
-    if (_docId) {
-        await updateDoc(doc(db, 'stories', _docId), payload);
-    } else {
-        const ref = await addDoc(collection(db, 'stories'), payload);
-        newId = ref.id;
-    }
-    await loadStories();
-    return newId;
+    if(_docId) await updateDoc(doc(db, 'stories', _docId), payload);
+    else { const ref = await addDoc(collection(db, 'stories'), payload); return ref.id; }
   }
-
   async function saveTask(t) {
     const { _docId, ...payload } = t;
-    if (_docId) await updateDoc(doc(db, 'tasks', _docId), payload);
+    if(_docId) await updateDoc(doc(db, 'tasks', _docId), payload);
     else await addDoc(collection(db, 'tasks'), payload);
-    await loadTasks();
-    await loadStories(); // Refresh story progress
   }
+  async function deleteStoryByDocId(id) { await deleteDoc(doc(db, 'stories', id)); }
+  async function deleteTask(id) { await deleteDoc(doc(db, 'tasks', id)); }
 
-  async function deleteFeatureByDocId(id) { await deleteDoc(doc(db, 'features', id)); await loadFeatures(); }
-  async function deleteStoryByDocId(id) { await deleteDoc(doc(db, 'stories', id)); await loadStories(); }
-  async function deleteTaskByDocId(id) { await deleteDoc(doc(db, 'tasks', id)); await loadTasks(); }
-
-  window.firestone = { loadAllData, saveFeature, saveStory, saveTask, deleteFeatureByDocId, deleteStoryByDocId, deleteTaskByDocId };
-  
-  // Initial Load
-  setTimeout(loadAllData, 500);
+  window.firestone = { saveFeature, saveStory, saveTask, deleteStoryByDocId, deleteTask, saveConfig, deleteConfig };
 </script>
 </body>
 </html>
