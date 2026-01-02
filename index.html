@@ -445,7 +445,7 @@
                 <h2 class="text-4xl font-black text-slate-900 tracking-tight">Sistema</h2>
                 <p class="text-slate-500 mt-1 font-medium">Gestão de catálogos e parâmetros globais do Scrum.</p>
             </header>
-            <div id="configs-content" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+            <div id="configs-content" class="flex flex-col gap-10"></div>
         </div>
 
         <!-- Task Modals -->
@@ -601,29 +601,55 @@
     function renderConfigLists() {
         const container = document.getElementById('configs-content');
         container.innerHTML = '';
+        
+        // Mapeamento de nomes amigáveis para as configurações individuais
+        const configLabels = {
+            'directorate': 'Diretoria',
+            'statusFeature': 'Status de Features',
+            'area': 'Áreas',
+            'po': 'Product Owners',
+            'statusStory': 'Status de Histórias',
+            'system': 'Sistema',
+            'techlead': 'Tech Lead',
+            'statusTask': 'Status de Tasks'
+        };
+
         const groups = {
-            'Iniciativas': ['directorate', 'statusFeature'],
-            'Histórias': ['area', 'po', 'statusStory'],
-            'Tarefas': ['system', 'techlead', 'statusTask']
+            'Configurações de Features': ['directorate', 'statusFeature'],
+            'Configurações de Histórias': ['area', 'po', 'statusStory', 'system'],
+            'Configurações de Tasks': ['techlead', 'statusTask']
         };
 
         for (const [groupName, types] of Object.entries(groups)) {
+            // Criar Seção do Grupo
+            const groupSection = document.createElement('div');
+            groupSection.className = "space-y-6";
+            
+            const groupHeader = document.createElement('h3');
+            groupHeader.className = "text-xl font-black text-slate-800 border-b-2 border-slate-200 pb-2";
+            groupHeader.innerText = groupName;
+            groupSection.appendChild(groupHeader);
+            
+            const grid = document.createElement('div');
+            grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8";
+            
             types.forEach(type => {
-                const section = document.createElement('div');
-                section.className = "card p-6 border-t-4 border-indigo-600";
-                let title = type.charAt(0).toUpperCase() + type.slice(1);
-                if(type === 'po') title = 'Product Owners';
-                if(type.startsWith('status')) title = 'Status ' + groupName;
+                const card = document.createElement('div');
+                card.className = "card p-6 border-t-4 border-indigo-600";
+                
+                const title = configLabels[type] || type;
 
-                section.innerHTML = `
-                    <h3 class="text-xs font-black mb-4 text-indigo-700 uppercase tracking-widest">${title}</h3>
+                card.innerHTML = `
+                    <h4 class="text-xs font-black mb-4 text-indigo-700 uppercase tracking-widest">${title}</h4>
                     <div id="list-${type}" class="space-y-2 mb-6 max-h-48 overflow-y-auto pr-2"></div>
                     <div class="flex space-x-2">
                         <input type="text" id="input-${type}" placeholder="Novo item..." class="border-2 border-slate-50 bg-slate-50 p-2 text-sm rounded-xl flex-1 focus:bg-white focus:border-indigo-200 transition-all">
                         <button onclick="addConfigItem('${type}')" class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold shadow-md shadow-indigo-100 hover:bg-indigo-700 transition">+</button>
                     </div>
                 `;
-                container.appendChild(section);
+                grid.appendChild(card);
+                container.appendChild(groupSection);
+                groupSection.appendChild(grid);
                 renderConfigItems(type);
             });
         }
@@ -631,6 +657,7 @@
 
     function renderConfigItems(type) {
         const list = document.getElementById(`list-${type}`);
+        if(!list) return;
         list.innerHTML = '';
         configs[type].forEach(item => {
             const row = document.createElement('div');
