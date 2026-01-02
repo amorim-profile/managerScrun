@@ -359,11 +359,22 @@
                     </form>
                 </div>
 
+                <!-- Bulk Action Bar for Features -->
+                <div id="feature-table-action-controls" class="card p-4 hidden bg-[#1F3BB3] border-none flex items-center justify-between text-white animate-fadeIn shadow-lg">
+                    <div class="flex items-center space-x-4">
+                        <span id="feature-selected-count-message" class="text-xs font-bold opacity-90 tracking-wide px-2 border-r border-white/20"></span>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="editSelectedFeature()" id="feature-edit-selected-btn" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-[10px] font-bold transition uppercase">Editar</button>
+                        <button onclick="confirmDeleteSelectedFeatures()" id="feature-delete-selected-btn" class="bg-red-500/80 hover:bg-red-600 px-4 py-2 rounded-lg text-[10px] font-bold transition uppercase">Excluir</button>
+                    </div>
+                </div>
+
                 <div class="card overflow-hidden">
                     <table class="w-full dense-table">
                         <thead>
                             <tr>
-                                <th class="w-16"></th>
+                                <th class="w-12 text-center"><input type="checkbox" id="header-select-all-features" onchange="toggleSelectAllFeatures(this.checked)" class="w-4 h-4 rounded text-[#1F3BB3] border-gray-300"></th>
                                 <th class="text-left">ID Ext</th>
                                 <th class="text-left">Iniciativa</th>
                                 <th class="text-left">Responsável</th>
@@ -649,6 +660,13 @@
         'Em Andamento': 'bg-[#1F3BB3] text-white',
     };
 
+    const priorityColors = {
+        'Alta': 'bg-red-50 text-red-600',
+        'Média': 'bg-amber-50 text-amber-600',
+        'Baixa': 'bg-green-50 text-green-600',
+    };
+
+    // === IMPORT LOGIC ===
     async function handleFileImport(type, input) {
         const file = input.files[0];
         if (!file) return;
@@ -780,7 +798,6 @@
 
         const isHidden = sub.classList.contains('hidden');
         
-        // Fecha os outros menus para uma navegação limpa
         document.querySelectorAll('[id^="submenu-"]').forEach(s => s.classList.add('hidden'));
         document.querySelectorAll('[id^="arrow-"]').forEach(a => a.classList.remove('rotate-180'));
 
@@ -818,6 +835,45 @@
         document.getElementById('message-modal').classList.remove('hidden');
     }
     function closeModal() { document.getElementById('message-modal').classList.add('hidden'); }
+
+    // === FEATURES SELECTION & ACTIONS ===
+    var selectedFeatureIds = new Set();
+    function toggleFeatureSel(id, chk) { 
+        if(chk) selectedFeatureIds.add(id); 
+        else selectedFeatureIds.delete(id); 
+        updateFeatureActionControls(); 
+        renderFeatures(); // Re-render to show row background highlight
+    }
+    function toggleSelectAllFeatures(chk) {
+        document.querySelectorAll('#features-table-body input[type="checkbox"]').forEach(c => {
+            const id = parseInt(c.getAttribute('data-id'));
+            if(chk) selectedFeatureIds.add(id); else selectedFeatureIds.delete(id);
+        });
+        updateFeatureActionControls();
+        renderFeatures();
+    }
+    function updateFeatureActionControls() {
+        const ctrl = document.getElementById('feature-table-action-controls');
+        if(selectedFeatureIds.size > 0) ctrl.classList.remove('hidden'); else ctrl.classList.add('hidden');
+        document.getElementById('feature-selected-count-message').textContent = `${selectedFeatureIds.size} selecionada(s)`;
+    }
+    function editSelectedFeature() { 
+        const id = Array.from(selectedFeatureIds)[0]; 
+        const f = features.find(ft => ft.id === id); 
+        if(f) openFeatureForm(f); 
+    }
+    function confirmDeleteSelectedFeatures() {
+        showModal("Excluir Lote", `Deseja remover as ${selectedFeatureIds.size} iniciativas selecionadas definitivamente?`, 
+            `<button onclick="closeModal()" class="text-xs font-bold text-gray-400">Cancelar</button>
+             <button onclick="deleteMassFeatures(); closeModal();" class="btn-primary !bg-red-500 text-xs">Confirmar</button>`);
+    }
+    async function deleteMassFeatures() {
+        for(const id of Array.from(selectedFeatureIds)) {
+            const f = features.find(ft => ft.id === id);
+            if(f && f._docId) await window.firestone.deleteFeatureByDocId(f._docId);
+        }
+        selectedFeatureIds.clear(); updateFeatureActionControls();
+    }
 
     function renderConfigLists() {
         const container = document.getElementById('configs-content');
@@ -1028,20 +1084,23 @@
         if(!body) return; body.innerHTML = '';
         features.forEach(f => {
             const statusClass = statusColors[f.status] || 'bg-slate-100 text-slate-500';
+            const isSelected = selectedFeatureIds.has(f.id);
+
             body.innerHTML += `
-                <tr class="hover:bg-blue-50/20 transition cursor-pointer group" onclick="openFeatureFormById(${f.id})">
-                    <td class="text-center"><div class="w-1.5 h-1.5 rounded-full bg-blue-300 opacity-0 group-hover:opacity-100 transition mx-auto"></div></td>
+                <tr class="hover:bg-blue-50/20 transition group ${isSelected ? 'bg-blue-50' : ''}">
+                    <td class="text-center"><input type="checkbox" onchange="toggleFeatureSel(${f.id}, this.checked)" ${isSelected ? 'checked' : ''} class="w-4 h-4 rounded text-[#1F3BB3] border-gray-300" data-id="${f.id}"></td>
                     <td class="font-bold text-gray-400 text-[11px] uppercase">${f.externalId || f.id}</td>
-                    <td class="text-sm font-bold text-slate-800">${f.title}</td>
+                    <td class="text-sm font-bold text-slate-800 cursor-pointer" onclick="openFeatureFormById(${f.id})">${f.title}</td>
                     <td class="text-xs font-semibold text-gray-500">${f.po}</td>
                     <td class="text-center"><span class="status-badge ${statusClass}">${f.status}</span></td>
                     <td class="text-right">
-                         <button class="text-gray-300 group-hover:text-[#1F3BB3] transition">
+                         <button onclick="openFeatureFormById(${f.id})" class="text-gray-300 group-hover:text-[#1F3BB3] transition">
                              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                          </button>
                     </td>
                 </tr>`;
         });
+        updateFeatureActionControls();
     }
 
     function openFeatureForm(f = null) {
@@ -1246,13 +1305,14 @@
     }
 
     var selectedStoryIds = new Set();
-    function toggleStorySel(id, chk) { if(chk) selectedStoryIds.add(id); else selectedStoryIds.delete(id); updateActionControls(); }
+    function toggleStorySel(id, chk) { if(chk) selectedStoryIds.add(id); else selectedStoryIds.delete(id); updateActionControls(); renderStories(); }
     function toggleSelectAll(chk) {
         document.querySelectorAll('#stories-table-body input[type="checkbox"]').forEach(c => {
-            c.checked = chk; const id = parseInt(c.getAttribute('data-id'));
+            const id = parseInt(c.getAttribute('data-id'));
             if(chk) selectedStoryIds.add(id); else selectedStoryIds.delete(id);
         });
         updateActionControls();
+        renderStories();
     }
     function updateActionControls() {
         const ctrl = document.getElementById('table-action-controls');
@@ -1350,9 +1410,10 @@
     else await addDoc(collection(db, 'tasks'), payload);
   }
   async function deleteStoryByDocId(id) { await deleteDoc(doc(db, 'stories', id)); }
+  async function deleteFeatureByDocId(id) { await deleteDoc(doc(db, 'features', id)); }
   async function deleteTask(id) { await deleteDoc(doc(db, 'tasks', id)); }
 
-  window.firestone = { saveFeature, saveStory, saveTask, deleteStoryByDocId, deleteTask, saveConfig, deleteConfig };
+  window.firestone = { saveFeature, saveStory, saveTask, deleteStoryByDocId, deleteFeatureByDocId, deleteTask, saveConfig, deleteConfig };
 </script>
 </body>
 </html>
