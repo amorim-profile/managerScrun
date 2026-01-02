@@ -166,6 +166,11 @@
             font-weight: 700;
             background-color: #EFF6FF;
         }
+
+        /* Filter Styles */
+        .filter-select {
+            @apply border border-gray-200 text-xs font-semibold text-gray-600 rounded-xl px-4 py-2 outline-none bg-white focus:ring-2 focus:ring-blue-100 transition shadow-sm;
+        }
     </style>
 </head>
 <body class="flex flex-col md:flex-row overflow-hidden">
@@ -325,6 +330,19 @@
                     </div>
                 </header>
 
+                <div class="flex flex-wrap items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-gray-50">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-bold text-gray-400 uppercase">Filtros:</span>
+                        <select id="filter-feature-po" onchange="renderFeatures()" class="filter-select">
+                            <option value="">Todos Responsáveis (PO)</option>
+                        </select>
+                        <select id="filter-feature-status" onchange="renderFeatures()" class="filter-select">
+                            <option value="">Todas Situações</option>
+                        </select>
+                        <button onclick="clearFeatureFilters()" class="text-[10px] font-bold text-[#1F3BB3] hover:underline px-2">Limpar</button>
+                    </div>
+                </div>
+
                 <div id="feature-form-container" class="card p-8 hidden animate-fadeIn border-t-4 border-[#1F3BB3]">
                     <form id="feature-form" class="space-y-6">
                         <input type="hidden" id="feature-id"><input type="hidden" id="feature-doc-id">
@@ -405,6 +423,22 @@
                         </button>
                     </div>
                 </header>
+
+                <div class="flex flex-wrap items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-gray-50">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-bold text-gray-400 uppercase">Filtros:</span>
+                        <select id="filter-story-po" onchange="renderStories()" class="filter-select">
+                            <option value="">Todos POs</option>
+                        </select>
+                        <select id="filter-story-area" onchange="renderStories()" class="filter-select">
+                            <option value="">Todas Áreas</option>
+                        </select>
+                        <select id="filter-story-status" onchange="renderStories()" class="filter-select">
+                            <option value="">Todos Status</option>
+                        </select>
+                        <button onclick="clearStoryFilters()" class="text-[10px] font-bold text-[#1F3BB3] hover:underline px-2">Limpar</button>
+                    </div>
+                </div>
                 
                 <div id="story-form-container" class="card p-8 hidden animate-fadeIn border-t-4 border-[#1F3BB3]">
                     <form id="story-form" class="space-y-6">
@@ -492,6 +526,7 @@
                                     <th class="w-12 text-center"><input type="checkbox" id="header-select-all" onchange="toggleSelectAll(this.checked)" class="w-4 h-4 rounded text-[#1F3BB3] border-gray-300"></th>
                                     <th class="text-left">Identificador</th>
                                     <th class="text-left">Título da História</th>
+                                    <th class="text-left">PO Responsável</th>
                                     <th class="text-left">Área</th>
                                     <th class="text-left">Situação</th>
                                     <th class="text-left">Execução</th>
@@ -536,7 +571,7 @@
                     <!-- Import Stories -->
                     <div class="card p-8 border-t-4 border-indigo-500 flex flex-col h-full">
                         <h4 class="text-[10px] font-extrabold mb-4 text-indigo-600 uppercase tracking-widest">Importar Histórias</h4>
-                        <p class="text-xs text-gray-400 mb-6 leading-relaxed flex-grow">Carregue o backlog de histórias. Necessário vincular o ID da Feature se houver.</p>
+                        <p class="text-xs text-gray-400 mb-6 leading-relaxed flex-grow">Carregue o backlog de histórias com todos os campos (Link, Descrição, etc).</p>
                         <div class="space-y-3">
                             <button onclick="downloadTemplate('stories')" class="w-full py-3 bg-slate-50 text-slate-600 rounded-xl text-[10px] font-bold uppercase hover:bg-slate-100 transition border border-slate-200">Baixar Modelo CSV</button>
                             <input type="file" id="file-import-stories" class="hidden" accept=".csv" onchange="handleFileImport('stories', this)">
@@ -549,7 +584,7 @@
                     <!-- Import Tasks -->
                     <div class="card p-8 border-t-4 border-blue-500 flex flex-col h-full">
                         <h4 class="text-[10px] font-extrabold mb-4 text-blue-600 uppercase tracking-widest">Importar Tasks</h4>
-                        <p class="text-xs text-gray-400 mb-6 leading-relaxed flex-grow">Carregue tarefas. Informe o ID da História para associação correta.</p>
+                        <p class="text-xs text-gray-400 mb-6 leading-relaxed flex-grow">Carregue tarefas vinculadas, gmud e links de PR.</p>
                         <div class="space-y-3">
                             <button onclick="downloadTemplate('tasks')" class="w-full py-3 bg-slate-50 text-slate-600 rounded-xl text-[10px] font-bold uppercase hover:bg-slate-100 transition border border-slate-200">Baixar Modelo CSV</button>
                             <input type="file" id="file-import-tasks" class="hidden" accept=".csv" onchange="handleFileImport('tasks', this)">
@@ -675,16 +710,71 @@
         'Baixa': 'bg-green-50 text-green-600',
     };
 
+    // === FILTER HELPERS ===
+    function clearFeatureFilters() {
+        document.getElementById('filter-feature-po').value = "";
+        document.getElementById('filter-feature-status').value = "";
+        renderFeatures();
+    }
+
+    function clearStoryFilters() {
+        document.getElementById('filter-story-po').value = "";
+        document.getElementById('filter-story-area').value = "";
+        document.getElementById('filter-story-status').value = "";
+        renderStories();
+    }
+
+    function populateFilterDropdowns() {
+        // Populate Feature filters
+        const featurePo = document.getElementById('filter-feature-po');
+        const featureStatus = document.getElementById('filter-feature-status');
+        if(featurePo) {
+            const current = featurePo.value;
+            featurePo.innerHTML = `<option value="">Todos Responsáveis (PO)</option>`;
+            configs.po.filter(c => c.isActive).forEach(c => { featurePo.innerHTML += `<option value="${c.name}">${c.name}</option>`; });
+            featurePo.value = current;
+        }
+        if(featureStatus) {
+            const current = featureStatus.value;
+            featureStatus.innerHTML = `<option value="">Todas Situações</option>`;
+            configs.statusFeature.filter(c => c.isActive).forEach(c => { featureStatus.innerHTML += `<option value="${c.name}">${c.name}</option>`; });
+            featureStatus.value = current;
+        }
+
+        // Populate Story filters
+        const storyPo = document.getElementById('filter-story-po');
+        const storyArea = document.getElementById('filter-story-area');
+        const storyStatus = document.getElementById('filter-story-status');
+        if(storyPo) {
+            const current = storyPo.value;
+            storyPo.innerHTML = `<option value="">Todos POs</option>`;
+            configs.po.filter(c => c.isActive).forEach(c => { storyPo.innerHTML += `<option value="${c.name}">${c.name}</option>`; });
+            storyPo.value = current;
+        }
+        if(storyArea) {
+            const current = storyArea.value;
+            storyArea.innerHTML = `<option value="">Todas Áreas</option>`;
+            configs.area.filter(c => c.isActive).forEach(c => { storyArea.innerHTML += `<option value="${c.name}">${c.name}</option>`; });
+            storyArea.value = current;
+        }
+        if(storyStatus) {
+            const current = storyStatus.value;
+            storyStatus.innerHTML = `<option value="">Todos Status</option>`;
+            configs.statusStory.filter(c => c.isActive).forEach(c => { storyStatus.innerHTML += `<option value="${c.name}">${c.name}</option>`; });
+            storyStatus.value = current;
+        }
+    }
+
     // === TEMPLATE LOGIC ===
     function downloadTemplate(type) {
         let headers = [];
         let filename = `modelo_${type}.csv`;
         
         if (type === 'features') headers = ["ID Externo", "Titulo", "Diretoria", "PO", "Status"];
-        else if (type === 'stories') headers = ["ID Externo", "Titulo", "Area", "PO", "Status", "Prioridade", "Solicitante", "Data", "FeatureID"];
+        else if (type === 'stories') headers = ["ID Externo", "Titulo", "Area", "PO", "Status", "Prioridade", "Solicitante", "Data", "Link", "Descricao", "FeatureID"];
         else if (type === 'tasks') headers = ["ID Externo", "Titulo", "HistoriaID", "Plataforma", "Lider Tecnico", "Status", "GMUD", "Link"];
 
-        const csvString = "\ufeff" + headers.join(";"); // Usando ponto e vírgula por padrão para Excel BR
+        const csvString = "\ufeff" + headers.join(";"); 
         const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
         link.href = URL.createObjectURL(blob);
@@ -706,11 +796,9 @@
                 const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
                 if (lines.length <= 1) throw new Error("Ficheiro vazio ou sem dados.");
 
-                // Detectar delimitador (vírgula ou ponto e vírgula)
                 const headerLine = lines[0];
                 const delimiter = headerLine.includes(';') ? ';' : ',';
                 
-                // Mapear cabeçalhos para índices
                 const headers = headerLine.split(delimiter).map(h => h.trim().toLowerCase());
                 const findIdx = (names) => headers.findIndex(h => names.some(n => h.includes(n.toLowerCase())));
 
@@ -718,13 +806,12 @@
                 let count = 0;
 
                 for (let line of dataLines) {
-                    // Regex para lidar com valores entre aspas contendo delimitadores
                     const regex = new RegExp(`("${delimiter}"|[^"${delimiter}]+)(?=\\s*${delimiter}|\\s*$)`, 'g');
                     const values = line.match(regex) || [];
                     const cleanValues = values.map(v => v.replace(/^"|"$/g, '').trim());
 
                     if (type === 'features') {
-                        const payload = {
+                        await window.firestone.saveFeature({
                             id: generateId(),
                             externalId: cleanValues[findIdx(["externo", "ext"])] || "",
                             title: cleanValues[findIdx(["titulo", "nome", "iniciativa"])] || "Sem Titulo",
@@ -732,10 +819,9 @@
                             po: cleanValues[findIdx(["po", "product"])] || "",
                             status: cleanValues[findIdx(["status", "situacao"])] || "Proposto",
                             updatedAt: new Date().toISOString()
-                        };
-                        await window.firestone.saveFeature(payload);
+                        });
                     } else if (type === 'stories') {
-                        const payload = {
+                        await window.firestone.saveStory({
                             id: generateId(),
                             externalId: cleanValues[findIdx(["externo", "ext"])] || "",
                             title: cleanValues[findIdx(["titulo", "historia"])] || "Sem Titulo",
@@ -745,12 +831,13 @@
                             priority: cleanValues[findIdx(["prioridade"])] || "Média",
                             requesterName: cleanValues[findIdx(["solicitante"])] || "",
                             requestedDate: cleanValues[findIdx(["data"])] || new Date().toISOString().split('T')[0],
+                            externalLink: cleanValues[findIdx(["link", "referencia"])] || "",
+                            description: cleanValues[findIdx(["descricao", "detalhes"])] || "",
                             featureId: parseInt(cleanValues[findIdx(["featureid", "id feature"])]) || null,
                             updatedAt: new Date().toISOString()
-                        };
-                        await window.firestone.saveStory(payload);
+                        });
                     } else if (type === 'tasks') {
-                        const payload = {
+                        await window.firestone.saveTask({
                             id: generateId(),
                             externalId: cleanValues[findIdx(["externo", "ext"])] || "",
                             title: cleanValues[findIdx(["titulo", "tarefa"])] || "Sem Titulo",
@@ -761,23 +848,21 @@
                             gmudId: cleanValues[findIdx(["gmud"])] || "",
                             externalLink: cleanValues[findIdx(["link", "pr"])] || "",
                             updatedAt: new Date().toISOString()
-                        };
-                        await window.firestone.saveTask(payload);
+                        });
                     }
                     count++;
                 }
 
-                showModal("Sucesso", `${count} registos importados com sucesso baseados nos cabeçalhos encontrados.`, `<button onclick="closeModal()" class="btn-primary text-xs">Entendido</button>`);
+                showModal("Sucesso", `${count} registos importados com sucesso.`, `<button onclick="closeModal()" class="btn-primary text-xs">Entendido</button>`);
                 input.value = ''; 
             } catch (err) {
                 console.error(err);
-                showModal("Erro", "Falha ao processar o ficheiro. Certifique-se que o arquivo é um CSV válido e contém os cabeçalhos necessários.", `<button onclick="closeModal()" class="btn-primary text-xs">Fechar</button>`);
+                showModal("Erro", "Falha ao processar o ficheiro.", `<button onclick="closeModal()" class="btn-primary text-xs">Fechar</button>`);
             }
         };
         reader.readAsText(file);
     }
 
-    // === EXPORT LOGIC ===
     function exportData(type) {
         let dataToExport = [];
         let filename = "";
@@ -863,8 +948,8 @@
         if(subBtn) subBtn.classList.add('active');
 
         if(viewId === 'configs') renderConfigLists();
-        if(viewId === 'stories') { renderStories(); populateSelects(); populateStoryFeatureSelect(); }
-        if(viewId === 'feature') { renderFeatures(); populateFeatureSelects(); }
+        if(viewId === 'stories') { populateFilterDropdowns(); renderStories(); populateSelects(); populateStoryFeatureSelect(); }
+        if(viewId === 'feature') { populateFilterDropdowns(); renderFeatures(); populateFeatureSelects(); }
         if(viewId === 'dashboard') renderDashboard();
     }
 
@@ -1026,7 +1111,17 @@
     function renderStories() {
         const body = document.getElementById('stories-table-body');
         if(!body) return; body.innerHTML = '';
-        stories.forEach(s => {
+        
+        const filterPo = document.getElementById('filter-story-po')?.value;
+        const filterArea = document.getElementById('filter-story-area')?.value;
+        const filterStatus = document.getElementById('filter-story-status')?.value;
+
+        let filteredStories = stories;
+        if(filterPo) filteredStories = filteredStories.filter(s => s.po === filterPo);
+        if(filterArea) filteredStories = filteredStories.filter(s => s.area === filterArea);
+        if(filterStatus) filteredStories = filteredStories.filter(s => s.status === filterStatus);
+
+        filteredStories.forEach(s => {
             const prog = getStoryProg(s.id);
             const statusClass = statusColors[s.status] || 'bg-slate-100 text-slate-600';
             const isSelected = selectedStoryIds.has(s.id);
@@ -1036,11 +1131,9 @@
                     <td class="text-center"><input type="checkbox" onchange="toggleStorySel(${s.id}, this.checked)" ${isSelected ? 'checked' : ''} class="w-4 h-4 rounded text-[#1F3BB3] border-gray-300" data-id="${s.id}"></td>
                     <td class="font-bold text-gray-400 text-[11px] uppercase">${s.externalId || '-'}</td>
                     <td class="cursor-pointer" onclick="openStoryFormById(${s.id})">
-                        <div class="flex flex-col">
-                            <span class="text-sm font-bold text-slate-800">${s.title}</span>
-                            <span class="text-[10px] font-bold text-[#1F3BB3] uppercase mt-1 opacity-60">${s.po || 'N/A'}</span>
-                        </div>
+                        <span class="text-sm font-bold text-slate-800">${s.title}</span>
                     </td>
+                    <td class="text-xs font-bold text-[#1F3BB3] uppercase opacity-70">${s.po || 'N/A'}</td>
                     <td class="text-xs font-semibold text-gray-500">${s.area}</td>
                     <td><span class="status-badge ${statusClass}">${s.status}</span></td>
                     <td>
@@ -1122,7 +1215,15 @@
     function renderFeatures() {
         const body = document.getElementById('features-table-body');
         if(!body) return; body.innerHTML = '';
-        features.forEach(f => {
+
+        const filterPo = document.getElementById('filter-feature-po')?.value;
+        const filterStatus = document.getElementById('filter-feature-status')?.value;
+
+        let filteredFeatures = features;
+        if(filterPo) filteredFeatures = filteredFeatures.filter(f => f.po === filterPo);
+        if(filterStatus) filteredFeatures = filteredFeatures.filter(f => f.status === filterStatus);
+
+        filteredFeatures.forEach(f => {
             const statusClass = statusColors[f.status] || 'bg-slate-100 text-slate-500';
             const isSelected = selectedFeatureIds.has(f.id);
 
@@ -1425,6 +1526,7 @@
         const item = docToObj(d);
         if(window.configs[item.type]) window.configs[item.type].push(item);
     });
+    if(typeof window.populateFilterDropdowns === 'function') window.populateFilterDropdowns();
     if(!document.getElementById('configs-view').classList.contains('hidden')) window.renderConfigLists();
   });
 
